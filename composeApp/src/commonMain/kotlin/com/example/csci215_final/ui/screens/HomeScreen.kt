@@ -72,6 +72,10 @@ import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.Clock
 import com.example.csci215_final.ui.components.toShortTime
 import csci215final.composeapp.generated.resources.Papernotes
+import androidx.compose.foundation.Image
+import csci215final.composeapp.generated.resources.empty_check
+import csci215final.composeapp.generated.resources.filled_check
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,7 +136,7 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
+            item(key = "welcome") {
                 Spacer(Modifier.height(50.dp))
                 Text(
                     text = "Welcome Back!",
@@ -152,17 +156,17 @@ fun HomeScreen(
             }
 
             // ── Reminders ─────────────────────────────────────────────────
-            item {
+            item(key = "reminders_header") {
                 SectionHeader("Reminders")
 
             }
 
             if (reminders.isEmpty()) {
-                item {
+                item(key = "reminders_empty") {
                     EmptyState("No active reminders.")
                 }
             } else {
-                items(reminders, key = { it.id }) { reminder ->
+                items(reminders, key = { "reminder_${it.id}" }) { reminder ->
                     ReminderCard(
                         reminder = reminder,
                         onClick = { onNavigateToEditReminder(reminder.id) }
@@ -170,7 +174,7 @@ fun HomeScreen(
                 }
             }
 
-            item {
+            item(key = "add_reminder_button") {
                 OutlinedButton(
                     onClick = onNavigateToNewReminder,
                     modifier = Modifier.fillMaxWidth()
@@ -181,26 +185,29 @@ fun HomeScreen(
             }
 
             // ── Today's Tasks ─────────────────────────────────────────────
-            item {
+            item(key = "tasks_header") {
                 SectionHeader("Today's Tasks")
             }
 
             if (tasks.isEmpty()) {
-                item {
+                item(key = "tasks_empty") {
                     EmptyState("No tasks yet. Tap + to add one.")
                 }
             } else {
-                items(tasks, key = { it.task.id }) { taskWithRelations ->
+                items(tasks, key = { "task_${it.task.id}" }) { taskWithRelations ->
                     TaskCard(
                         taskWithRelations = taskWithRelations,
-                        onViewHelpersDistractions = { taskDetailDialog = taskWithRelations },
-                        onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) }
+                        onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) },
+                        onToggleCompletion = { isChecked ->
+                            // Make sure your ViewModel has this function!
+                            viewModel.updateTaskCompletion(taskWithRelations.task.id, isChecked)
+                        }
                     )
                 }
             }
 
             // ── Quote of the Day ──────────────────────────────────────────
-            item {
+            item (key = "quote"){
                 Spacer(Modifier.height(8.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -289,54 +296,92 @@ fun HomeScreen(
 @Composable
 private fun TaskCard(
     taskWithRelations: TaskWithRelations,
-    onViewHelpersDistractions: () -> Unit,
     onEditTask: () -> Unit,
+    // Add an onToggle callback to update the database via ViewModel
+    onToggleCompletion: (Boolean) -> Unit = {}
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEditTask() }, // Making the whole card clickable for editing
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(Modifier.padding(16.dp)) {
+            // --- First Row: Checkbox and Title ---
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
+                val isDone = taskWithRelations.task.isCompleted
+
+                // Interactable Checkbox (Flipping between PNGs)
+                Image(
+                    painter = painterResource(
+                        if (isDone) Res.drawable.filled_check else Res.drawable.empty_check
+                    ),
+                    contentDescription = if (isDone) "Completed" else "Incomplete",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onToggleCompletion(!isDone) }
+                )
+
+                Spacer(Modifier.width(12.dp))
+
                 Text(
-                    taskWithRelations.task.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = taskWithRelations.task.title,
+                    style = TextStyle(
+                        fontSize = 22.sp,
+                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                        textDecoration = if (isDone) TextDecoration.LineThrough else null
+                    ),
                     modifier = Modifier.weight(1f)
                 )
-                if (taskWithRelations.task.isCompleted) {
-                    Text(
-                        "Done",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
             }
-            if (taskWithRelations.task.description.isNotBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    taskWithRelations.task.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
-                )
-            }
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Due: ${taskWithRelations.task.dueDate.toDisplayDate()}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
             Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onViewHelpersDistractions, modifier = Modifier.weight(1f)) {
-                    Text("View Helpers & Distractions", maxLines = 1)
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+            Spacer(Modifier.height(12.dp))
+
+            // --- Second Row: Distractions (Left) and Helpers (Right) ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Left Column: Distractions
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "DISTRACTIONS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (taskWithRelations.distractions.isEmpty()) {
+                        Text("None", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        taskWithRelations.distractions.forEach { d ->
+                            Text("• ${d.name}", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                 }
-                Button(onClick = onEditTask, modifier = Modifier.weight(1f)) {
-                    Text("Edit Task")
+
+                Spacer(Modifier.width(16.dp))
+
+                // Right Column: Helpers
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                    Text(
+                        "HELPERS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (taskWithRelations.helpers.isEmpty()) {
+                        Text("None", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        taskWithRelations.helpers.forEach { h ->
+                            Text("• ${h.name}", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.End)
+                        }
+                    }
                 }
             }
         }
@@ -359,7 +404,6 @@ private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 1. Fixed width ensures all "Times" start at the same spot
                 Text(
                     text = reminder.scheduledTime.toShortTime(),
                     modifier = Modifier.width(80.dp),
@@ -371,8 +415,6 @@ private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
                         textAlign = TextAlign.Left,
                     )
                 )
-
-                // 2. Weight(1f) pushes the text to fill the remaining space
                 Text(
                     text = reminder.title,
                     modifier = Modifier.weight(1f),

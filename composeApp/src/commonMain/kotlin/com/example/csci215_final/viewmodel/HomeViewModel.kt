@@ -66,10 +66,13 @@ class HomeViewModel(
         }
     }
 
-    fun markTaskComplete(taskId: Long) {
+    fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
         viewModelScope.launch {
+            // 1. Fetch the existing task from the repository
             val task = taskRepository.getTaskById(taskId) ?: return@launch
-            taskRepository.updateTask(task.copy(isCompleted = true))
+
+            // 2. Update only the completion status
+            taskRepository.updateTask(task.copy(isCompleted = isCompleted))
         }
     }
 }
