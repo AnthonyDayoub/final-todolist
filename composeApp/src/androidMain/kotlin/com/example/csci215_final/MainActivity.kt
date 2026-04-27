@@ -6,12 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.csci215_final.data.local.database.DatabaseFactory
+import com.example.csci215_final.di.ServiceLocator
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
+        ServiceLocator.init(DatabaseFactory(applicationContext).create())
         setContent {
             App()
         }
