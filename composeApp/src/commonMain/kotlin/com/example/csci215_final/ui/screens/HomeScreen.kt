@@ -60,6 +60,15 @@ import org.jetbrains.compose.resources.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.plus
+import kotlinx.datetime.minus
+import androidx.compose.ui.text.style.TextDecoration
+import kotlinx.datetime.isoDayNumber
+import kotlinx.datetime.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +85,9 @@ fun HomeScreen(
     val reminders by viewModel.activeReminders.collectAsState()
 
     var taskDetailDialog by remember { mutableStateOf<TaskWithRelations?>(null) }
+
+    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
+    var selectedDate by remember { mutableStateOf(today) }
 
     Scaffold(
         topBar = {
@@ -129,6 +141,10 @@ fun HomeScreen(
                         color = Color(0xFF000000),
                         textAlign = TextAlign.Center,
                     )
+                )
+                WeekCalendar(
+                    selectedDate = selectedDate,
+                    onDateSelected = { selectedDate = it }
                 )
             }
             // ── Quote of the Day ──────────────────────────────────────────
@@ -368,5 +384,70 @@ private fun EmptyState(message: String) {
     ) {
         Text(message, style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+fun WeekCalendar(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
+) {
+    // Helper to find the most recent Sunday
+    // In kotlinx.datetime, Monday is 1, Sunday is 7.
+    val daysToSubtract = if (selectedDate.dayOfWeek.isoDayNumber == 7) 0 else selectedDate.dayOfWeek.isoDayNumber
+    val weekStart = selectedDate.minus(DatePeriod(days = daysToSubtract))
+
+    val daysOfWeekLabels = listOf("SU", "M", "T", "W", "R", "F", "SA")
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Previous Week
+            IconButton(onClick = { onDateSelected(selectedDate.minus(DatePeriod(days = 7))) }) {
+                Text("<", fontSize = 24.sp, fontFamily = FontFamily(Font(Res.font.Brownist)))
+            }
+
+            // Days of the week
+            daysOfWeekLabels.forEachIndexed { index, dayLabel ->
+                val dateForDay = weekStart.plus(DatePeriod(days = index))
+                val isSelected = dateForDay == selectedDate
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .clickable { onDateSelected(dateForDay) }
+                        .padding(4.dp)
+                ) {
+                    Text(
+                        text = dayLabel,
+                        fontFamily = FontFamily(Font(Res.font.Brownist)),
+                        fontSize = 28.sp,
+                        color = if (isSelected) Color.Black else Color.Gray,
+                        textDecoration = if (isSelected) TextDecoration.Underline else null
+                    )
+                }
+            }
+
+            // Next Week
+            IconButton(onClick = { onDateSelected(selectedDate.plus(DatePeriod(days = 7))) }) {
+                Text(">", fontSize = 24.sp, fontFamily = FontFamily(Font(Res.font.Brownist)))
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Active Day Display (e.g., SUNDAY, APRIL 15)
+        Text(
+            text = "${selectedDate.dayOfWeek.name}, ${selectedDate.month.name} ${selectedDate.dayOfMonth}".uppercase(),
+            fontFamily = FontFamily(Font(Res.font.Brownist)),
+            fontSize = 28.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
