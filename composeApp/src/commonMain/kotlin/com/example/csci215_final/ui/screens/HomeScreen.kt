@@ -152,7 +152,10 @@ fun HomeScreen(
             }
 
             // ── Reminders ─────────────────────────────────────────────────
-            item { SectionHeader("Reminders") }
+            item {
+                SectionHeader("Reminders")
+
+            }
 
             if (reminders.isEmpty()) {
                 item {
@@ -389,7 +392,16 @@ private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
 private fun SectionHeader(title: String) {
     Column {
         Spacer(Modifier.height(4.dp))
-        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            text = title,
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                fontWeight = FontWeight(400),
+                color = Color(0xFF000000),
+                textAlign = TextAlign.Right,
+            )
+        )
         HorizontalDivider(Modifier.padding(top = 4.dp))
     }
 }
