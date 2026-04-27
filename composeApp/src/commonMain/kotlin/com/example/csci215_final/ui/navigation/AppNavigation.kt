@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -20,13 +21,14 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavType
+import androidx.navigation.NavDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.example.csci215_final.ui.screens.ExistingReminderScreen
 import com.example.csci215_final.ui.screens.ExistingTaskScreen
 import com.example.csci215_final.ui.screens.HelperDistractionScreen
@@ -34,29 +36,47 @@ import com.example.csci215_final.ui.screens.HomeScreen
 import com.example.csci215_final.ui.screens.NewReminderScreen
 import com.example.csci215_final.ui.screens.NewTaskScreen
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
+
+private data class DrawerItem(
+    val label: String,
+    val icon: ImageVector,
+    val routeClass: KClass<*>,
+    val navigate: () -> Unit
+)
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+    val currentDestination: NavDestination? =
+        navController.currentBackStackEntryAsState().value?.destination
+
+    fun navigateAndClose(block: () -> Unit) {
+        scope.launch { drawerState.close() }
+        block()
+    }
 
     val drawerItems = listOf(
-        Triple("Home", Icons.Default.Home, Screen.Home.route),
-        Triple("New Task", Icons.Default.Add, Screen.NewTask.route),
-        Triple("New Reminder", Icons.Default.AddAlert, Screen.NewReminder.route),
-        Triple("Helpers & Distractions", Icons.AutoMirrored.Filled.List, Screen.HelperDistraction.route),
+        DrawerItem("Home", Icons.Default.Home, HomeRoute::class) {
+            navigateAndClose {
+                navController.navigate(HomeRoute) {
+                    popUpTo<HomeRoute> { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        },
+        DrawerItem("New Task", Icons.Default.Add, NewTaskRoute::class) {
+            navigateAndClose { navController.navigate(NewTaskRoute) { launchSingleTop = true } }
+        },
+        DrawerItem("New Reminder", Icons.Default.AddAlert, NewReminderRoute::class) {
+            navigateAndClose { navController.navigate(NewReminderRoute) { launchSingleTop = true } }
+        },
+        DrawerItem("Helpers & Distractions", Icons.AutoMirrored.Filled.List, HelperDistractionRoute::class) {
+            navigateAndClose { navController.navigate(HelperDistractionRoute) { launchSingleTop = true } }
+        },
     )
-
-    fun navigateAndClose(route: String) {
-        scope.launch { drawerState.close() }
-        navController.navigate(route) {
-            popUpTo(Screen.Home.route) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -66,15 +86,15 @@ fun AppNavigation() {
                 Text(
                     "Focus Todo",
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
-                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                drawerItems.forEach { (label, icon, route) ->
+                drawerItems.forEach { item ->
                     NavigationDrawerItem(
-                        icon = { Icon(icon, contentDescription = label) },
-                        label = { Text(label) },
-                        selected = currentRoute == route,
-                        onClick = { navigateAndClose(route) },
+                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        label = { Text(item.label) },
+                        selected = currentDestination?.hasRoute(item.routeClass, null) == true,
+                        onClick = item.navigate,
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
@@ -83,60 +103,48 @@ fun AppNavigation() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route
+            startDestination = HomeRoute
         ) {
-            composable(Screen.Home.route) {
+            composable<HomeRoute> {
                 HomeScreen(
                     onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onNavigateToNewTask = { navController.navigate(Screen.NewTask.route) },
-                    onNavigateToNewReminder = { navController.navigate(Screen.NewReminder.route) },
+                    onNavigateToNewTask = { navController.navigate(NewTaskRoute) },
+                    onNavigateToNewReminder = { navController.navigate(NewReminderRoute) },
                     onNavigateToEditTask = { taskId ->
-                        navController.navigate(Screen.ExistingTask.createRoute(taskId))
+                        navController.navigate(ExistingTaskRoute(taskId))
                     },
                     onNavigateToEditReminder = { reminderId ->
-                        navController.navigate(Screen.ExistingReminder.createRoute(reminderId))
+                        navController.navigate(ExistingReminderRoute(reminderId))
                     }
                 )
             }
 
-            composable(Screen.NewTask.route) {
-                NewTaskScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+            composable<NewTaskRoute> {
+                NewTaskScreen(onNavigateBack = { navController.popBackStack() })
             }
 
-            composable(Screen.NewReminder.route) {
-                NewReminderScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+            composable<NewReminderRoute> {
+                NewReminderScreen(onNavigateBack = { navController.popBackStack() })
             }
 
-            composable(
-                route = Screen.ExistingTask.route,
-                arguments = listOf(navArgument("taskId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val taskId = backStackEntry.arguments?.getLong("taskId") ?: return@composable
+            composable<ExistingTaskRoute> { backStackEntry ->
+                val route: ExistingTaskRoute = backStackEntry.toRoute()
                 ExistingTaskScreen(
-                    taskId = taskId,
+                    taskId = route.taskId,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
 
-            composable(
-                route = Screen.ExistingReminder.route,
-                arguments = listOf(navArgument("reminderId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val reminderId = backStackEntry.arguments?.getLong("reminderId") ?: return@composable
+            composable<ExistingReminderRoute> { backStackEntry ->
+                val route: ExistingReminderRoute = backStackEntry.toRoute()
                 ExistingReminderScreen(
-                    reminderId = reminderId,
+                    reminderId = route.reminderId,
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
 
-            composable(Screen.HelperDistraction.route) {
-                HelperDistractionScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+            composable<HelperDistractionRoute> {
+                HelperDistractionScreen(onNavigateBack = { navController.popBackStack() })
             }
         }
     }
