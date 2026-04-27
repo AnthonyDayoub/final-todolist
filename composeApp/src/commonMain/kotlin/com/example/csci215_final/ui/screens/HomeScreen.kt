@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -69,6 +70,8 @@ import kotlinx.datetime.minus
 import androidx.compose.ui.text.style.TextDecoration
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.Clock
+import com.example.csci215_final.ui.components.toShortTime
+import csci215final.composeapp.generated.resources.Papernotes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,6 +150,52 @@ fun HomeScreen(
                     onDateSelected = { selectedDate = it }
                 )
             }
+
+            // ── Reminders ─────────────────────────────────────────────────
+            item { SectionHeader("Reminders") }
+
+            if (reminders.isEmpty()) {
+                item {
+                    EmptyState("No active reminders.")
+                }
+            } else {
+                items(reminders, key = { it.id }) { reminder ->
+                    ReminderCard(
+                        reminder = reminder,
+                        onClick = { onNavigateToEditReminder(reminder.id) }
+                    )
+                }
+            }
+
+            item {
+                OutlinedButton(
+                    onClick = onNavigateToNewReminder,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("+ Add Reminder")
+                }
+                Spacer(Modifier.height(40.dp)) // FAB clearance
+            }
+
+            // ── Today's Tasks ─────────────────────────────────────────────
+            item {
+                SectionHeader("Today's Tasks")
+            }
+
+            if (tasks.isEmpty()) {
+                item {
+                    EmptyState("No tasks yet. Tap + to add one.")
+                }
+            } else {
+                items(tasks, key = { it.task.id }) { taskWithRelations ->
+                    TaskCard(
+                        taskWithRelations = taskWithRelations,
+                        onViewHelpersDistractions = { taskDetailDialog = taskWithRelations },
+                        onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) }
+                    )
+                }
+            }
+
             // ── Quote of the Day ──────────────────────────────────────────
             item {
                 Spacer(Modifier.height(8.dp))
@@ -196,50 +245,6 @@ fun HomeScreen(
                 }
             }
 
-            // ── Today's Tasks ─────────────────────────────────────────────
-            item {
-                SectionHeader("Today's Tasks")
-            }
-
-            if (tasks.isEmpty()) {
-                item {
-                    EmptyState("No tasks yet. Tap + to add one.")
-                }
-            } else {
-                items(tasks, key = { it.task.id }) { taskWithRelations ->
-                    TaskCard(
-                        taskWithRelations = taskWithRelations,
-                        onViewHelpersDistractions = { taskDetailDialog = taskWithRelations },
-                        onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) }
-                    )
-                }
-            }
-
-            // ── Reminders ─────────────────────────────────────────────────
-            item { SectionHeader("Reminders") }
-
-            if (reminders.isEmpty()) {
-                item {
-                    EmptyState("No active reminders.")
-                }
-            } else {
-                items(reminders, key = { it.id }) { reminder ->
-                    ReminderCard(
-                        reminder = reminder,
-                        onClick = { onNavigateToEditReminder(reminder.id) }
-                    )
-                }
-            }
-
-            item {
-                OutlinedButton(
-                    onClick = onNavigateToNewReminder,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("+ Add Reminder")
-                }
-                Spacer(Modifier.height(80.dp)) // FAB clearance
-            }
         }
     }
 
@@ -342,29 +347,44 @@ private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
+            containerColor = Color(0xFFE0E0E0)
+        ),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp)
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(reminder.title, fontWeight = FontWeight.Medium,
-                    style = MaterialTheme.typography.bodyLarge)
+        Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 1. Fixed width ensures all "Times" start at the same spot
                 Text(
-                    "${reminder.frequency.name.lowercase().replaceFirstChar { it.uppercase() }} · ${reminder.scheduledTime.toDisplayDateTime()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    text = reminder.scheduledTime.toShortTime(),
+                    modifier = Modifier.width(80.dp),
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF000000),
+                        textAlign = TextAlign.Left,
+                    )
+                )
+
+                // 2. Weight(1f) pushes the text to fill the remaining space
+                Text(
+                    text = reminder.title,
+                    modifier = Modifier.weight(1f),
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF000000),
+                        textAlign = TextAlign.Right, // Aligns text within its area to the right
+                    )
                 )
             }
         }
     }
 }
-
 @Composable
 private fun SectionHeader(title: String) {
     Column {
