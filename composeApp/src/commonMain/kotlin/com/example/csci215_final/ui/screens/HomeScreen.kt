@@ -42,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,6 +54,12 @@ import com.example.csci215_final.domain.model.TaskWithRelations
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toDisplayDateTime
 import com.example.csci215_final.viewmodel.HomeViewModel
+import csci215final.composeapp.generated.resources.Brownist
+import csci215final.composeapp.generated.resources.Res
+import org.jetbrains.compose.resources.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +80,12 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Focus Todo", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        "Check it Off",
+                        fontFamily = FontFamily(Font(Res.font.Brownist))
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -104,6 +117,20 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item {
+                Spacer(Modifier.height(50.dp))
+                Text(
+                    text = "Welcome Back!",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = TextStyle(
+                        fontSize = 76.sp,
+                        fontFamily = FontFamily(Font(Res.font.Brownist)),
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF000000),
+                        textAlign = TextAlign.Center,
+                    )
+                )
+            }
             // ── Quote of the Day ──────────────────────────────────────────
             item {
                 Spacer(Modifier.height(8.dp))
