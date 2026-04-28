@@ -20,8 +20,6 @@ data class ExistingTaskUiState(
     val title: String = "",
     val description: String = "",
     val dueDateMillis: Long = 0L,
-    val selectedHelperIds: Set<Long> = emptySet(),
-    val selectedDistractionIds: Set<Long> = emptySet(),
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
@@ -31,26 +29,10 @@ data class ExistingTaskUiState(
 class ExistingTaskViewModel(
     private val taskId: Long,
     private val taskRepository: TaskRepository,
-    private val helperRepository: HelperRepository,
-    private val distractionRepository: DistractionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExistingTaskUiState())
     val uiState: StateFlow<ExistingTaskUiState> = _uiState.asStateFlow()
-
-    val allHelpers: StateFlow<List<Helper>> =
-        helperRepository.getAllHelpers().stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
-
-    val allDistractions: StateFlow<List<Distraction>> =
-        distractionRepository.getAllDistractions().stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
 
     init {
         loadTask()
@@ -68,8 +50,6 @@ class ExistingTaskViewModel(
                 title = taskWithRelations.task.title,
                 description = taskWithRelations.task.description,
                 dueDateMillis = taskWithRelations.task.dueDate.toEpochMilliseconds(),
-                selectedHelperIds = taskWithRelations.helpers.map { it.id }.toSet(),
-                selectedDistractionIds = taskWithRelations.distractions.map { it.id }.toSet(),
                 isLoading = false
             )
         }
@@ -87,20 +67,6 @@ class ExistingTaskViewModel(
         _uiState.value = _uiState.value.copy(dueDateMillis = millis)
     }
 
-    fun toggleHelper(helperId: Long) {
-        val current = _uiState.value.selectedHelperIds
-        _uiState.value = _uiState.value.copy(
-            selectedHelperIds = if (helperId in current) current - helperId else current + helperId
-        )
-    }
-
-    fun toggleDistraction(distractionId: Long) {
-        val current = _uiState.value.selectedDistractionIds
-        _uiState.value = _uiState.value.copy(
-            selectedDistractionIds = if (distractionId in current) current - distractionId else current + distractionId
-        )
-    }
-
     fun saveChanges() {
         val state = _uiState.value
         val original = state.taskWithRelations ?: return
@@ -116,8 +82,6 @@ class ExistingTaskViewModel(
                 dueDate = kotlinx.datetime.Instant.fromEpochMilliseconds(state.dueDateMillis)
             )
             taskRepository.updateTask(updated)
-            taskRepository.replaceHelpersForTask(taskId, state.selectedHelperIds.toList())
-            taskRepository.replaceDistractionsForTask(taskId, state.selectedDistractionIds.toList())
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)
         }
     }

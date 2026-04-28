@@ -51,8 +51,6 @@ import kotlinx.datetime.Instant
 fun NewTaskScreen(onNavigateBack: () -> Unit) {
     val viewModel: NewTaskViewModel = viewModel { ServiceLocator.newTaskViewModel() }
     val uiState by viewModel.uiState.collectAsState()
-    val allHelpers by viewModel.allHelpers.collectAsState()
-    val allDistractions by viewModel.allDistractions.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
@@ -132,56 +130,6 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
             }
 
             HorizontalDivider()
-
-            // Helpers
-            Text("Helpers", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            if (allHelpers.isEmpty()) {
-                Text("No helpers added yet. Add them in Helpers & Distractions.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                allHelpers.forEach { helper ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = helper.id in uiState.selectedHelperIds,
-                            onCheckedChange = { viewModel.toggleHelper(helper.id) }
-                        )
-                        Column {
-                            Text(helper.name, style = MaterialTheme.typography.bodyMedium)
-                            if (helper.description.isNotBlank()) {
-                                Text(helper.description, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            // Distractions
-            Text("Distractions to Avoid", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            if (allDistractions.isEmpty()) {
-                Text("No distractions added yet. Add them in Helpers & Distractions.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                allDistractions.forEach { distraction ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = distraction.id in uiState.selectedDistractionIds,
-                            onCheckedChange = { viewModel.toggleDistraction(distraction.id) }
-                        )
-                        Column {
-                            Text(distraction.name, style = MaterialTheme.typography.bodyMedium)
-                            if (distraction.description.isNotBlank()) {
-                                Text(distraction.description, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
-            }
 
             Spacer(Modifier.height(8.dp))
 

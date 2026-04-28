@@ -58,8 +58,8 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
         ServiceLocator.existingTaskViewModel(taskId)
     }
     val uiState by viewModel.uiState.collectAsState()
-    val allHelpers by viewModel.allHelpers.collectAsState()
-    val allDistractions by viewModel.allDistractions.collectAsState()
+    // val allHelpers by viewModel.allHelpers.collectAsState()
+    // val allDistractions by viewModel.allDistractions.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -147,6 +147,7 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
 
             HorizontalDivider()
 
+            /**
             Text("Helpers", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             if (allHelpers.isEmpty()) {
                 Text("No helpers added yet.", style = MaterialTheme.typography.bodySmall,
@@ -192,6 +193,7 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
                     }
                 }
             }
+            */
 
             Spacer(Modifier.height(8.dp))
 

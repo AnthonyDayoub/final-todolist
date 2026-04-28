@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAlert
 import androidx.compose.material.icons.filled.Home
@@ -33,7 +32,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.csci215_final.ui.screens.ExistingReminderScreen
 import com.example.csci215_final.ui.screens.ExistingTaskScreen
-import com.example.csci215_final.ui.screens.HelperDistractionScreen
 import com.example.csci215_final.ui.screens.HomeScreen
 import com.example.csci215_final.ui.screens.NewReminderScreen
 import com.example.csci215_final.ui.screens.NewTaskScreen
@@ -79,11 +77,6 @@ fun AppNavigation() {
         DrawerItem("New Reminder", Icons.Default.AddAlert, NewReminderRoute::class) {
             navigateAndClose(NewReminderRoute::class) {
                 navController.navigate(NewReminderRoute) { launchSingleTop = true }
-            }
-        },
-        DrawerItem("Helpers & Distractions", Icons.AutoMirrored.Filled.List, HelperDistractionRoute::class) {
-            navigateAndClose(HelperDistractionRoute::class) {
-                navController.navigate(HelperDistractionRoute) { launchSingleTop = true }
             }
         },
     )
@@ -163,13 +156,6 @@ fun AppNavigation() {
                         navController.popBackStack()
                     }
                 )
-            }
-
-            composable<HelperDistractionRoute> {
-                HelperDistractionScreen(onNavigateBack = {
-                    selectedKey = HomeRoute::class
-                    navController.popBackStack()
-                })
             }
         }
     }

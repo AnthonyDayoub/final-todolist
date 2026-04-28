@@ -18,8 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -52,8 +49,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.domain.model.Reminder
 import com.example.csci215_final.domain.model.TaskWithRelations
-import com.example.csci215_final.ui.components.toDisplayDate
-import com.example.csci215_final.ui.components.toDisplayDateTime
 import com.example.csci215_final.viewmodel.HomeViewModel
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Res
@@ -90,8 +85,6 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val tasks by viewModel.todayTasks.collectAsState()
     val reminders by viewModel.activeReminders.collectAsState()
-
-    var taskDetailDialog by remember { mutableStateOf<TaskWithRelations?>(null) }
 
     val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
     var selectedDate by remember { mutableStateOf(today) }
@@ -258,39 +251,6 @@ fun HomeScreen(
         }
     }
 
-    // ── Helpers & Distractions detail dialog ──────────────────────────────
-    taskDetailDialog?.let { taskRel ->
-        AlertDialog(
-            onDismissRequest = { taskDetailDialog = null },
-            title = { Text(taskRel.task.title) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (taskRel.helpers.isNotEmpty()) {
-                        Text("Helpers", fontWeight = FontWeight.SemiBold,
-                            style = MaterialTheme.typography.labelLarge)
-                        taskRel.helpers.forEach { h ->
-                            Text("• ${h.name}", style = MaterialTheme.typography.bodyMedium)
-                        }
-                    } else {
-                        Text("No helpers assigned.", style = MaterialTheme.typography.bodySmall)
-                    }
-                    HorizontalDivider()
-                    if (taskRel.distractions.isNotEmpty()) {
-                        Text("Distractions to avoid", fontWeight = FontWeight.SemiBold,
-                            style = MaterialTheme.typography.labelLarge)
-                        taskRel.distractions.forEach { d ->
-                            Text("• ${d.name}", style = MaterialTheme.typography.bodyMedium)
-                        }
-                    } else {
-                        Text("No distractions assigned.", style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { taskDetailDialog = null }) { Text("Close") }
-            }
-        )
-    }
 }
 
 @Composable
@@ -337,52 +297,6 @@ private fun TaskCard(
                     ),
                     modifier = Modifier.weight(1f)
                 )
-            }
-
-            Spacer(Modifier.height(12.dp))
-            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-            Spacer(Modifier.height(12.dp))
-
-            // --- Second Row: Distractions (Left) and Helpers (Right) ---
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Left Column: Distractions
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "DISTRACTIONS",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Bold
-                    )
-                    if (taskWithRelations.distractions.isEmpty()) {
-                        Text("None", style = MaterialTheme.typography.bodySmall)
-                    } else {
-                        taskWithRelations.distractions.forEach { d ->
-                            Text("• ${d.name}", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-
-                Spacer(Modifier.width(16.dp))
-
-                // Right Column: Helpers
-                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
-                    Text(
-                        "HELPERS",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Bold
-                    )
-                    if (taskWithRelations.helpers.isEmpty()) {
-                        Text("None", style = MaterialTheme.typography.bodySmall)
-                    } else {
-                        taskWithRelations.helpers.forEach { h ->
-                            Text("• ${h.name}", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.End)
-                        }
-                    }
-                }
             }
         }
     }
