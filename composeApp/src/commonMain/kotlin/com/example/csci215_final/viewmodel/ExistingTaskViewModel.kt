@@ -14,6 +14,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 
 data class ExistingTaskUiState(
     val taskWithRelations: TaskWithRelations? = null,
@@ -64,7 +70,19 @@ class ExistingTaskViewModel(
     }
 
     fun onDueDateChange(millis: Long) {
-        _uiState.value = _uiState.value.copy(dueDateMillis = millis)
+        // Preserve current time when the date changes (DatePicker returns UTC midnight)
+        val tz = TimeZone.currentSystemDefault()
+        val currentTime = Instant.fromEpochMilliseconds(_uiState.value.dueDateMillis).toLocalDateTime(tz).time
+        val newDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(tz).date
+        val combined = LocalDateTime(newDate, currentTime).toInstant(tz).toEpochMilliseconds()
+        _uiState.value = _uiState.value.copy(dueDateMillis = combined)
+    }
+
+    fun onScheduleTimeChange(hour: Int, minute: Int) {
+        val tz = TimeZone.currentSystemDefault()
+        val existing = Instant.fromEpochMilliseconds(_uiState.value.dueDateMillis).toLocalDateTime(tz)
+        val updated = LocalDateTime(existing.date, LocalTime(hour, minute))
+        _uiState.value = _uiState.value.copy(dueDateMillis = updated.toInstant(tz).toEpochMilliseconds())
     }
 
     fun saveChanges() {

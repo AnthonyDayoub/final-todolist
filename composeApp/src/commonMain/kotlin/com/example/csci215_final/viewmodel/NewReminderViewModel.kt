@@ -10,6 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 
 data class NewReminderUiState(
     val title: String = "",
@@ -38,7 +44,19 @@ class NewReminderViewModel(
     }
 
     fun onScheduledTimeChange(millis: Long) {
-        _uiState.value = _uiState.value.copy(scheduledTimeMillis = millis)
+        // Preserve current time when the date changes (DatePicker returns UTC midnight)
+        val tz = TimeZone.currentSystemDefault()
+        val currentTime = Instant.fromEpochMilliseconds(_uiState.value.scheduledTimeMillis).toLocalDateTime(tz).time
+        val newDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(tz).date
+        val combined = LocalDateTime(newDate, currentTime).toInstant(tz).toEpochMilliseconds()
+        _uiState.value = _uiState.value.copy(scheduledTimeMillis = combined)
+    }
+
+    fun onScheduleTimeChange(hour: Int, minute: Int) {
+        val tz = TimeZone.currentSystemDefault()
+        val existing = Instant.fromEpochMilliseconds(_uiState.value.scheduledTimeMillis).toLocalDateTime(tz)
+        val updated = LocalDateTime(existing.date, LocalTime(hour, minute))
+        _uiState.value = _uiState.value.copy(scheduledTimeMillis = updated.toInstant(tz).toEpochMilliseconds())
     }
 
     fun onFrequencyChange(frequency: ReminderFrequency) {

@@ -12,8 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,9 +26,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,13 +40,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.toDisplayDate
+import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.NewTaskViewModel
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,11 +57,22 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.dueDateMillis
     )
 
-    // Navigate back once saved
+    val initialDt = remember {
+        Instant.fromEpochMilliseconds(uiState.dueDateMillis)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+    }
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialDt.hour,
+        initialMinute = initialDt.minute,
+        is24Hour = false
+    )
+
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) onNavigateBack()
     }
@@ -89,7 +104,6 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
         ) {
             Spacer(Modifier.height(4.dp))
 
-            // Title
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = viewModel::onTitleChange,
@@ -99,7 +113,6 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
                 isError = uiState.error != null && uiState.title.isBlank()
             )
 
-            // Description
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::onDescriptionChange,
@@ -123,7 +136,21 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
                 }
             }
 
-            // Error
+            // Scheduled Time
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "Time: ${Instant.fromEpochMilliseconds(uiState.dueDateMillis).toShortTime()}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                OutlinedButton(onClick = { showTimePicker = true }) {
+                    Text("Change Time")
+                }
+            }
+
             if (uiState.error != null) {
                 Text(uiState.error!!, color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall)
@@ -160,5 +187,21 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
+                    showTimePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+            },
+            text = { TimePicker(state = timePickerState) }
+        )
     }
 }

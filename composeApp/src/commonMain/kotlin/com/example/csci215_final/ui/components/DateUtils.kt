@@ -13,7 +13,8 @@ fun Instant.toShortTime(): String {
         hour > 12 -> hour - 12
         else -> hour
     }
-    return "$displayHour$suffix"
+    val minute = dt.minute.toString().padStart(2, '0')
+    return "$displayHour:$minute $suffix"
 }
 
 fun Instant.toDisplayDate(): String {
