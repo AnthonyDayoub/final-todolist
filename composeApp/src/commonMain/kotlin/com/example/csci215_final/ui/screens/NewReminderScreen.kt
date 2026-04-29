@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -26,9 +27,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,8 +47,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.domain.model.ReminderFrequency
 import com.example.csci215_final.ui.components.toDisplayDate
+import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.NewReminderViewModel
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,8 +60,20 @@ fun NewReminderScreen(onNavigateBack: () -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.scheduledTimeMillis
+    )
+
+    val initialDt = remember {
+        Instant.fromEpochMilliseconds(uiState.scheduledTimeMillis)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+    }
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialDt.hour,
+        initialMinute = initialDt.minute,
+        is24Hour = false
     )
 
     LaunchedEffect(uiState.isSaved) {
@@ -123,6 +141,21 @@ fun NewReminderScreen(onNavigateBack: () -> Unit) {
                 }
             }
 
+            // Time picker row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "Time: ${Instant.fromEpochMilliseconds(uiState.scheduledTimeMillis).toShortTime()}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                OutlinedButton(onClick = { showTimePicker = true }) {
+                    Text("Pick Time")
+                }
+            }
+
             HorizontalDivider()
 
             // Frequency selector
@@ -179,5 +212,21 @@ fun NewReminderScreen(onNavigateBack: () -> Unit) {
         ) {
             DatePicker(state = datePickerState)
         }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
+                    showTimePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+            },
+            text = { TimePicker(state = timePickerState) }
+        )
     }
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.csci215_final.domain.model.Quote
 import com.example.csci215_final.domain.model.Reminder
+import com.example.csci215_final.domain.model.ReminderFrequency
 import com.example.csci215_final.domain.model.TaskWithRelations
 import com.example.csci215_final.repository.QuoteRepository
 import com.example.csci215_final.repository.ReminderRepository
@@ -12,10 +13,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 
 data class HomeUiState(
+    val isFirstLaunch: Boolean = false,
     val quote: Quote? = null,
     val isQuoteLoading: Boolean = false,
     val quoteError: String? = null
@@ -24,23 +32,40 @@ data class HomeUiState(
 class HomeViewModel(
     private val taskRepository: TaskRepository,
     private val reminderRepository: ReminderRepository,
-    private val quoteRepository: QuoteRepository
+    private val quoteRepository: QuoteRepository,
+    isFirstLaunch: Boolean = false
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(HomeUiState(isQuoteLoading = true))
+    private val _uiState = MutableStateFlow(HomeUiState(isFirstLaunch = isFirstLaunch, isQuoteLoading = true))
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    // Today's tasks (with helpers/distractions/reminders) — observed by the UI
+    private val _selectedDate = MutableStateFlow(Clock.System.todayIn(TimeZone.currentSystemDefault()))
+    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+
     val todayTasks: StateFlow<List<TaskWithRelations>> =
-        taskRepository.getAllTasksWithRelations().stateIn(
+        combine(taskRepository.getAllTasksWithRelations(), _selectedDate) { tasks, date ->
+            tasks.filter { twr ->
+                twr.task.dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date == date
+            }
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 
-    // Active reminders shown on the home screen
-    val activeReminders: StateFlow<List<Reminder>> =
-        reminderRepository.getActiveReminders().stateIn(
+    val remindersForSelectedDate: StateFlow<List<Reminder>> =
+        combine(reminderRepository.getActiveReminders(), _selectedDate) { reminders, date ->
+            reminders.filter { reminder ->
+                val reminderDate = reminder.scheduledTime
+                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                when (reminder.frequency) {
+                    ReminderFrequency.ONCE -> reminderDate == date
+                    ReminderFrequency.DAILY -> true
+                    ReminderFrequency.WEEKLY -> reminderDate.dayOfWeek == date.dayOfWeek
+                    ReminderFrequency.MONTHLY -> reminderDate.dayOfMonth == date.dayOfMonth
+                }
+            }
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
@@ -48,6 +73,10 @@ class HomeViewModel(
 
     init {
         loadTodayQuote()
+    }
+
+    fun selectDate(date: LocalDate) {
+        _selectedDate.value = date
     }
 
     fun loadTodayQuote() {
@@ -68,10 +97,7 @@ class HomeViewModel(
 
     fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
         viewModelScope.launch {
-            // 1. Fetch the existing task from the repository
             val task = taskRepository.getTaskById(taskId) ?: return@launch
-
-            // 2. Update only the completion status
             taskRepository.updateTask(task.copy(isCompleted = isCompleted))
         }
     }

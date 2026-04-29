@@ -35,9 +35,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,14 +54,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
 import kotlinx.datetime.minus
 import androidx.compose.ui.text.style.TextDecoration
 import kotlinx.datetime.isoDayNumber
-import kotlinx.datetime.Clock
 import com.example.csci215_final.ui.components.toShortTime
 import csci215final.composeapp.generated.resources.Papernotes
 import androidx.compose.foundation.Image
@@ -84,10 +78,8 @@ fun HomeScreen(
     val viewModel: HomeViewModel = viewModel { ServiceLocator.homeViewModel() }
     val uiState by viewModel.uiState.collectAsState()
     val tasks by viewModel.todayTasks.collectAsState()
-    val reminders by viewModel.activeReminders.collectAsState()
-
-    val today = remember { Clock.System.todayIn(TimeZone.currentSystemDefault()) }
-    var selectedDate by remember { mutableStateOf(today) }
+    val reminders by viewModel.remindersForSelectedDate.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
 
     Scaffold(
         topBar = {
@@ -132,7 +124,7 @@ fun HomeScreen(
             item(key = "welcome") {
                 Spacer(Modifier.height(50.dp))
                 Text(
-                    text = "Welcome Back!",
+                    text = if (uiState.isFirstLaunch) "Welcome!" else "Welcome Back!",
                     modifier = Modifier.fillMaxWidth(),
                     style = TextStyle(
                         fontSize = 76.sp,
@@ -144,7 +136,7 @@ fun HomeScreen(
                 )
                 WeekCalendar(
                     selectedDate = selectedDate,
-                    onDateSelected = { selectedDate = it }
+                    onDateSelected = { viewModel.selectDate(it) }
                 )
             }
 
@@ -298,15 +290,24 @@ private fun TaskCard(
 
                 Spacer(Modifier.width(12.dp))
 
-                Text(
-                    text = taskWithRelations.task.title,
-                    style = TextStyle(
-                        fontSize = 22.sp,
-                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                        textDecoration = if (isDone) TextDecoration.LineThrough else null
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = taskWithRelations.task.title,
+                        style = TextStyle(
+                            fontSize = 22.sp,
+                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                            textDecoration = if (isDone) TextDecoration.LineThrough else null
+                        )
+                    )
+                    Text(
+                        text = taskWithRelations.task.dueDate.toShortTime(),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                            color = Color.Gray
+                        )
+                    )
+                }
             }
         }
     }

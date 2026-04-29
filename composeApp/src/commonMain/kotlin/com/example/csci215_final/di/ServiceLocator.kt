@@ -2,6 +2,7 @@ package com.example.csci215_final.di
 
 import com.example.csci215_final.data.local.database.AppDatabase
 import com.example.csci215_final.data.remote.QuoteApiService
+import com.example.csci215_final.preferences.AppPreferences
 import com.example.csci215_final.repository.QuoteRepository
 import com.example.csci215_final.repository.ReminderRepository
 import com.example.csci215_final.repository.TaskRepository
@@ -14,10 +15,10 @@ import com.example.csci215_final.viewmodel.HomeViewModel
 import com.example.csci215_final.viewmodel.NewReminderViewModel
 import com.example.csci215_final.viewmodel.NewTaskViewModel
 
-// Lightweight manual DI — call ServiceLocator.init(db) once in Application/App entry point
 object ServiceLocator {
 
     private lateinit var db: AppDatabase
+    private lateinit var prefs: AppPreferences
 
     val quoteApiService: QuoteApiService by lazy { QuoteApiService() }
 
@@ -25,11 +26,16 @@ object ServiceLocator {
     val reminderRepository: ReminderRepository by lazy { ReminderRepositoryImpl(db.reminderDao()) }
     val quoteRepository: QuoteRepository by lazy { QuoteRepositoryImpl(quoteApiService) }
 
-    fun init(database: AppDatabase) {
+    fun init(database: AppDatabase, preferences: AppPreferences) {
         db = database
+        prefs = preferences
     }
 
-    fun homeViewModel() = HomeViewModel(taskRepository, reminderRepository, quoteRepository)
+    fun homeViewModel(): HomeViewModel {
+        val firstLaunch = prefs.isFirstLaunch()
+        if (firstLaunch) prefs.markLaunched()
+        return HomeViewModel(taskRepository, reminderRepository, quoteRepository, firstLaunch)
+    }
 
     fun newTaskViewModel() = NewTaskViewModel(taskRepository)
 
