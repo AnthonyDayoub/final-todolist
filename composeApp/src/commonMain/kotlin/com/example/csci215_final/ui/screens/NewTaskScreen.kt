@@ -40,15 +40,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.NewTaskViewModel
+import csci215final.composeapp.generated.resources.Papernotes
+import csci215final.composeapp.generated.resources.Res
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.Font
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,7 +116,16 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = viewModel::onTitleChange,
-                label = { Text("Title *") },
+                label = { Text(
+                    text = "Title of Task",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF000000),
+                        textAlign = TextAlign.Right,
+                    )
+                ) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.error != null && uiState.title.isBlank()
@@ -116,7 +134,16 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::onDescriptionChange,
-                label = { Text("Description") },
+                label = { Text(
+                    text = "Description of Task",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFF000000),
+                        textAlign = TextAlign.Right,
+                    )
+                ) },
                 minLines = 3,
                 modifier = Modifier.fillMaxWidth()
             )

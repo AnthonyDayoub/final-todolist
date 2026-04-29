@@ -270,7 +270,6 @@ private fun TaskCard(
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(Modifier.padding(16.dp)) {
-            // --- First Row: Checkbox and Title ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -299,6 +298,9 @@ private fun TaskCard(
                             textDecoration = if (isDone) TextDecoration.LineThrough else null
                         )
                     )
+
+                    Spacer(Modifier.width(20.dp))
+
                     Text(
                         text = taskWithRelations.task.dueDate.toShortTime(),
                         style = TextStyle(

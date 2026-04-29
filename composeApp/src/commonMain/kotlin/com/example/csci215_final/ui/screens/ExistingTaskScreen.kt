@@ -43,13 +43,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.viewmodel.ExistingTaskViewModel
+import csci215final.composeapp.generated.resources.Papernotes
+import csci215final.composeapp.generated.resources.Res
 import kotlinx.datetime.Instant
+import org.jetbrains.compose.resources.Font
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,7 +120,18 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = viewModel::onTitleChange,
-                label = { Text("Title *") },
+                label = {
+                    Text(
+                        text = "Title of Task",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                            fontWeight = FontWeight(400),
+                            color = Color(0xFF000000),
+                            textAlign = TextAlign.Right,
+                        )
+                    )
+                },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 isError = uiState.error != null && uiState.title.isBlank()
@@ -121,7 +140,18 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::onDescriptionChange,
-                label = { Text("Description") },
+                label = {
+                    Text(
+                        text = "Description of Task",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                            fontWeight = FontWeight(400),
+                            color = Color(0xFF000000),
+                            textAlign = TextAlign.Right,
+                        )
+                    )
+                },
                 minLines = 3,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -146,54 +176,6 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
             }
 
             HorizontalDivider()
-
-            /**
-            Text("Helpers", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            if (allHelpers.isEmpty()) {
-                Text("No helpers added yet.", style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                allHelpers.forEach { helper ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = helper.id in uiState.selectedHelperIds,
-                            onCheckedChange = { viewModel.toggleHelper(helper.id) }
-                        )
-                        Column {
-                            Text(helper.name, style = MaterialTheme.typography.bodyMedium)
-                            if (helper.description.isNotBlank()) {
-                                Text(helper.description, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider()
-
-            Text("Distractions to Avoid", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            if (allDistractions.isEmpty()) {
-                Text("No distractions added yet.", style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            } else {
-                allDistractions.forEach { distraction ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = distraction.id in uiState.selectedDistractionIds,
-                            onCheckedChange = { viewModel.toggleDistraction(distraction.id) }
-                        )
-                        Column {
-                            Text(distraction.name, style = MaterialTheme.typography.bodyMedium)
-                            if (distraction.description.isNotBlank()) {
-                                Text(distraction.description, style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                        }
-                    }
-                }
-            }
-            */
 
             Spacer(Modifier.height(8.dp))
 
