@@ -54,6 +54,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.viewmodel.ExistingTaskViewModel
+import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
 import kotlinx.datetime.Instant
@@ -87,7 +88,12 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Task") },
+                title = {
+                    Text(
+                        "Edit Task",
+                        fontFamily = FontFamily(Font(Res.font.Brownist))
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

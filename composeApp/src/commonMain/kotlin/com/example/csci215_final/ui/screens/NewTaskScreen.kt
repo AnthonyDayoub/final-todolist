@@ -52,6 +52,7 @@ import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.NewTaskViewModel
+import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
 import kotlinx.datetime.Instant
@@ -89,7 +90,12 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Task") },
+                title = {
+                    Text(
+                        "New Task",
+                        fontFamily = FontFamily(Font(Res.font.Brownist))
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")

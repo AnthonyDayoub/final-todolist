@@ -162,7 +162,7 @@ fun HomeScreen(
             item(key = "add_reminder_button") {
                 OutlinedButton(
                     onClick = onNavigateToNewReminder,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("+ Add Reminder")
                 }
@@ -255,12 +255,15 @@ fun HomeScreen(
 
 }
 
+val CustomPurple = Color(0xFF7B5EA1)
+
 @Composable
 private fun TaskCard(
     taskWithRelations: TaskWithRelations,
     onEditTask: () -> Unit,
     // Add an onToggle callback to update the database via ViewModel
     onToggleCompletion: (Boolean) -> Unit = {}
+
 ) {
     Card(
         modifier = Modifier
@@ -298,15 +301,14 @@ private fun TaskCard(
                             textDecoration = if (isDone) TextDecoration.LineThrough else null
                         )
                     )
-
-                    Spacer(Modifier.width(20.dp))
+                    Spacer(Modifier.height(6.dp))
 
                     Text(
                         text = taskWithRelations.task.dueDate.toShortTime(),
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                            color = Color.Gray
+                            color = CustomPurple
                         )
                     )
                 }

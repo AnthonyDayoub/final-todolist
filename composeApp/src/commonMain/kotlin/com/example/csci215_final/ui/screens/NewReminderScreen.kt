@@ -54,6 +54,7 @@ import com.example.csci215_final.domain.model.ReminderFrequency
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.NewReminderViewModel
+import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
 import kotlinx.datetime.Instant
@@ -91,7 +92,12 @@ fun NewReminderScreen(onNavigateBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Reminder") },
+                title = {
+                    Text(
+                        "New Reminder",
+                        fontFamily = FontFamily(Font(Res.font.Brownist))
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
