@@ -199,6 +199,16 @@ fun HomeScreen(
                 }
             }
 
+            item(key = "add_task_button") {
+                OutlinedButton(
+                    onClick = onNavigateToNewTask,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("+ Add Task")
+                }
+                Spacer(Modifier.height(40.dp)) // FAB clearance
+            }
+
             // ── Quote of the Day ──────────────────────────────────────────
             item (key = "quote"){
                 Spacer(Modifier.height(8.dp))
