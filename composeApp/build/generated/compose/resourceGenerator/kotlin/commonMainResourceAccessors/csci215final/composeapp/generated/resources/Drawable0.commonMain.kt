@@ -47,6 +47,13 @@ internal val Res.drawable.filled_check: DrawableResource by lazy {
       ))
     }
 
+@delegate:ResourceContentHash(-1_108_479_956)
+internal val Res.drawable.looseLeafPaperBKGD: DrawableResource by lazy {
+      DrawableResource("drawable:looseLeafPaperBKGD", setOf(
+        ResourceItem(setOf(), "${MD}drawable/looseLeafPaperBKGD.jpg", -1, -1),
+      ))
+    }
+
 @InternalResourceApi
 internal fun _collectCommonMainDrawable0Resources(map: MutableMap<String, DrawableResource>) {
   map.put("checkmark", Res.drawable.checkmark)
@@ -54,4 +61,5 @@ internal fun _collectCommonMainDrawable0Resources(map: MutableMap<String, Drawab
   map.put("edit", Res.drawable.edit)
   map.put("empty_check", Res.drawable.empty_check)
   map.put("filled_check", Res.drawable.filled_check)
+  map.put("looseLeafPaperBKGD", Res.drawable.looseLeafPaperBKGD)
 }

@@ -64,8 +64,12 @@ import csci215final.composeapp.generated.resources.Papernotes
 import androidx.compose.foundation.Image
 import csci215final.composeapp.generated.resources.empty_check
 import csci215final.composeapp.generated.resources.filled_check
+import csci215final.composeapp.generated.resources.looseLeafPaperBKGD
 import org.jetbrains.compose.resources.painterResource
 
+
+val CustomPurple = Color(0xFF7B5EA1)
+val CustomLightPurple = Color(0xFFe3d2fa)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -81,181 +85,193 @@ fun HomeScreen(
     val reminders by viewModel.remindersForSelectedDate.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Check it Off",
-                        fontFamily = FontFamily(Font(Res.font.Brownist))
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.loadTodayQuote() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh quote")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToNewTask) {
-                Icon(Icons.Default.Add, contentDescription = "New Task")
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            item(key = "welcome") {
-                Spacer(Modifier.height(50.dp))
-                Text(
-                    text = if (uiState.isFirstLaunch) "Welcome!" else "Welcome Back!",
-                    modifier = Modifier.fillMaxWidth(),
-                    style = TextStyle(
-                        fontSize = 76.sp,
-                        fontFamily = FontFamily(Font(Res.font.Brownist)),
-                        fontWeight = FontWeight(400),
-                        color = Color(0xFF000000),
-                        textAlign = TextAlign.Center,
-                    )
-                )
-                WeekCalendar(
-                    selectedDate = selectedDate,
-                    onDateSelected = { viewModel.selectDate(it) }
-                )
-            }
-
-            // ── Reminders ─────────────────────────────────────────────────
-            item(key = "reminders_header") {
-                SectionHeader("Reminders")
-
-            }
-
-            if (reminders.isEmpty()) {
-                item(key = "reminders_empty") {
-                    EmptyState("No active reminders.")
-                }
-            } else {
-                items(reminders, key = { "reminder_${it.id}" }) { reminder ->
-                    ReminderCard(
-                        reminder = reminder,
-                        onClick = { onNavigateToEditReminder(reminder.id) }
-                    )
-                }
-            }
-
-            item(key = "add_reminder_button") {
-                OutlinedButton(
-                    onClick = onNavigateToNewReminder,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text("+ Add Reminder")
-                }
-                Spacer(Modifier.height(40.dp)) // FAB clearance
-            }
-
-            // ── Today's Tasks ─────────────────────────────────────────────
-            item(key = "tasks_header") {
-                SectionHeader("Today's Tasks")
-            }
-
-            if (tasks.isEmpty()) {
-                item(key = "tasks_empty") {
-                    EmptyState("No tasks yet. Tap + to add one.")
-                }
-            } else {
-                items(tasks, key = { "task_${it.task.id}" }) { taskWithRelations ->
-                    TaskCard(
-                        taskWithRelations = taskWithRelations,
-                        onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) },
-                        onToggleCompletion = { isChecked ->
-                            // Make sure your ViewModel has this function!
-                            viewModel.updateTaskCompletion(taskWithRelations.task.id, isChecked)
-                        }
-                    )
-                }
-            }
-
-            item(key = "add_task_button") {
-                OutlinedButton(
-                    onClick = onNavigateToNewTask,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("+ Add Task")
-                }
-                Spacer(Modifier.height(40.dp)) // FAB clearance
-            }
-
-            // ── Quote of the Day ──────────────────────────────────────────
-            item (key = "quote"){
-                Spacer(Modifier.height(8.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Column(Modifier.padding(16.dp)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(Res.drawable.looseLeafPaperBKGD),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+        )
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
                         Text(
-                            "Quote of the Day",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            "Check it Off",
+                            fontFamily = FontFamily(Font(Res.font.Brownist))
                         )
-                        Spacer(Modifier.height(6.dp))
-                        when {
-                            uiState.isQuoteLoading -> {
-                                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(Modifier.size(24.dp))
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onOpenDrawer) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { viewModel.loadTodayQuote() }) {
+                            Icon(Icons.Default.Refresh, contentDescription = "Refresh quote")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = CustomPurple,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    )
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(onClick = onNavigateToNewTask) {
+                    Icon(Icons.Default.Add, contentDescription = "New Task")
+                }
+            }
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item(key = "welcome") {
+                    Spacer(Modifier.height(50.dp))
+                    Text(
+                        text = if (uiState.isFirstLaunch) "Welcome!" else "Welcome Back!",
+                        modifier = Modifier.fillMaxWidth(),
+                        style = TextStyle(
+                            fontSize = 76.sp,
+                            fontFamily = FontFamily(Font(Res.font.Brownist)),
+                            fontWeight = FontWeight(400),
+                            color = Color(0xFF000000),
+                            textAlign = TextAlign.Center,
+                        )
+                    )
+                    WeekCalendar(
+                        selectedDate = selectedDate,
+                        onDateSelected = { viewModel.selectDate(it) }
+                    )
+                }
+
+                // ── Reminders ─────────────────────────────────────────────────
+                item(key = "reminders_header") {
+                    SectionHeader("Reminders")
+
+                }
+
+                if (reminders.isEmpty()) {
+                    item(key = "reminders_empty") {
+                        EmptyState("No active reminders.")
+                    }
+                } else {
+                    items(reminders, key = { "reminder_${it.id}" }) { reminder ->
+                        ReminderCard(
+                            reminder = reminder,
+                            onClick = { onNavigateToEditReminder(reminder.id) }
+                        )
+                    }
+                }
+
+                item(key = "add_reminder_button") {
+                    OutlinedButton(
+                        onClick = onNavigateToNewReminder,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("+ Add Reminder")
+                    }
+                    Spacer(Modifier.height(40.dp)) // FAB clearance
+                }
+
+                // ── Today's Tasks ─────────────────────────────────────────────
+                item(key = "tasks_header") {
+                    SectionHeader("Today's Tasks")
+                }
+
+                if (tasks.isEmpty()) {
+                    item(key = "tasks_empty") {
+                        EmptyState("No tasks yet. Tap + to add one.")
+                    }
+                } else {
+                    items(tasks, key = { "task_${it.task.id}" }) { taskWithRelations ->
+                        TaskCard(
+                            taskWithRelations = taskWithRelations,
+                            onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) },
+                            onToggleCompletion = { isChecked ->
+                                // Make sure your ViewModel has this function!
+                                viewModel.updateTaskCompletion(taskWithRelations.task.id, isChecked)
+                            }
+                        )
+                    }
+                }
+
+                item(key = "add_task_button") {
+                    OutlinedButton(
+                        onClick = onNavigateToNewTask,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("+ Add Task")
+                    }
+                    Spacer(Modifier.height(40.dp)) // FAB clearance
+                }
+
+                // ── Quote of the Day ──────────────────────────────────────────
+                item(key = "quote") {
+                    Spacer(Modifier.height(8.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = CustomLightPurple
+                        )
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(
+                                "Quote of the Day",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            when {
+                                uiState.isQuoteLoading -> {
+                                    Box(
+                                        Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(Modifier.size(24.dp))
+                                    }
+                                }
+
+                                uiState.quoteError != null -> {
+                                    Text(
+                                        "Could not load quote.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+
+                                uiState.quote != null -> {
+                                    Text(
+                                        "“${uiState.quote!!.text}”",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontStyle = FontStyle.Italic,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        "— ${uiState.quote!!.author}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.align(Alignment.End)
+                                    )
                                 }
                             }
-                            uiState.quoteError != null -> {
-                                Text(
-                                    "Could not load quote.",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                            uiState.quote != null -> {
-                                Text(
-                                    "“${uiState.quote!!.text}”",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    fontStyle = FontStyle.Italic,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    "— ${uiState.quote!!.author}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.align(Alignment.End)
-                                )
-                            }
                         }
                     }
                 }
-            }
 
+            }
         }
     }
 
 }
-
-val CustomPurple = Color(0xFF7B5EA1)
 
 @Composable
 private fun TaskCard(
@@ -324,7 +340,7 @@ private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE0E0E0)
+            containerColor = CustomLightPurple
         ),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp)
     ) {
