@@ -61,6 +61,7 @@ import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.ExistingReminderViewModel
+import csci215final.composeapp.generated.resources.Bobby
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
@@ -98,6 +99,8 @@ fun ExistingReminderScreen(reminderId: Long, onNavigateBack: () -> Unit) {
         initialMinute = initialDt?.minute ?: 0,
         is24Hour = false
     )
+
+    val bobbyFont = FontFamily(Font(Res.font.Bobby))
 
     LaunchedEffect(uiState.isSaved) { if (uiState.isSaved) onNavigateBack() }
 
@@ -231,7 +234,8 @@ fun ExistingReminderScreen(reminderId: Long, onNavigateBack: () -> Unit) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                     OutlinedButton(onClick = { showDatePicker = true }) {
-                        Text("Pick Date")
+                        Text("Pick Date",
+                        fontFamily = bobbyFont)
                     }
                 }
 
@@ -248,7 +252,9 @@ fun ExistingReminderScreen(reminderId: Long, onNavigateBack: () -> Unit) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                     OutlinedButton(onClick = { showTimePicker = true }) {
-                        Text("Pick Time")
+                        Text("Pick Time",
+                            fontFamily = bobbyFont
+                        )
                     }
                 }
 
@@ -271,7 +277,7 @@ fun ExistingReminderScreen(reminderId: Long, onNavigateBack: () -> Unit) {
                             label = {
                                 Text(
                                     freq.name.lowercase().replaceFirstChar { it.uppercase() },
-                                    style = MaterialTheme.typography.labelMedium
+                                    fontFamily = bobbyFont
                                 )
                             }
                         )

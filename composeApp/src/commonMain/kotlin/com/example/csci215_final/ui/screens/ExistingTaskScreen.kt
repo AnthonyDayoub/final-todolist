@@ -1,5 +1,6 @@
 package com.example.csci215_final.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,11 +56,14 @@ import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.viewmodel.ExistingTaskViewModel
+import csci215final.composeapp.generated.resources.Bobby
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
+import csci215final.composeapp.generated.resources.looseLeafPaperBKGD
 import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,6 +81,8 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
         initialSelectedDateMillis = uiState.dueDateMillis.takeIf { it > 0 }
     )
 
+    val bobbyFont = FontFamily(Font(Res.font.Bobby))
+
     LaunchedEffect(uiState.isSaved) { if (uiState.isSaved) onNavigateBack() }
 
     if (uiState.isLoading) {
@@ -86,154 +92,172 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
         return
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Edit Task",
-                        fontFamily = FontFamily(Font(Res.font.Brownist))
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete task",
-                            tint = MaterialTheme.colorScheme.onPrimary)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CustomPurple,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Spacer(Modifier.height(4.dp))
-
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = viewModel::onTitleChange,
-                label = {
-                    Text(
-                        text = "Title of Task",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                            fontWeight = FontWeight(400),
-                            color = Color(0xFF000000),
-                            textAlign = TextAlign.Right,
-                        )
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.error != null && uiState.title.isBlank()
-            )
-
-            OutlinedTextField(
-                value = uiState.description,
-                onValueChange = viewModel::onDescriptionChange,
-                label = {
-                    Text(
-                        text = "Description of Task",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                            fontWeight = FontWeight(400),
-                            color = Color(0xFF000000),
-                            textAlign = TextAlign.Right,
-                        )
-                    )
-                },
-                minLines = 3,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "Due: ${Instant.fromEpochMilliseconds(uiState.dueDateMillis).toDisplayDate()}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                OutlinedButton(onClick = { showDatePicker = true }) {
-                    Text("Change Date")
-                }
-            }
-
-            if (uiState.error != null) {
-                Text(uiState.error!!, color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall)
-            }
-
-            HorizontalDivider()
-
-            Spacer(Modifier.height(8.dp))
-
-            PurpleButton(
-                text = "Save Changes",
-                onClick = viewModel::saveChanges,
-                isLoading = uiState.isSaving,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(24.dp))
-        }
-    }
-
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { viewModel.onDueDateChange(it) }
-                    showDatePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Task?") },
-            text = { Text("This action cannot be undone.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDeleteDialog = false
-                        viewModel.deleteTask()
-                        onNavigateBack()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) { Text("Delete") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
-            }
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(Res.drawable.looseLeafPaperBKGD),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop
         )
+
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "Edit Task",
+                            fontFamily = FontFamily(Font(Res.font.Brownist))
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(
+                                Icons.Default.Delete, contentDescription = "Delete task",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = CustomPurple,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    )
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Spacer(Modifier.height(4.dp))
+
+                OutlinedTextField(
+                    value = uiState.title,
+                    onValueChange = viewModel::onTitleChange,
+                    label = {
+                        Text(
+                            text = "Title of Task",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF000000),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = uiState.error != null && uiState.title.isBlank()
+                )
+
+                OutlinedTextField(
+                    value = uiState.description,
+                    onValueChange = viewModel::onDescriptionChange,
+                    label = {
+                        Text(
+                            text = "Description of Task",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF000000),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    },
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Due: ${
+                            Instant.fromEpochMilliseconds(uiState.dueDateMillis).toDisplayDate()
+                        }",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    OutlinedButton(onClick = { showDatePicker = true }) {
+                        Text("Change Date",
+                            fontFamily = bobbyFont
+                        )
+                    }
+                }
+
+                if (uiState.error != null) {
+                    Text(
+                        uiState.error!!, color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                HorizontalDivider()
+
+                Spacer(Modifier.height(8.dp))
+
+                PurpleButton(
+                    text = "Save Changes",
+                    onClick = viewModel::saveChanges,
+                    isLoading = uiState.isSaving,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(24.dp))
+            }
+        }
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { viewModel.onDueDateChange(it) }
+                        showDatePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete Task?") },
+                text = { Text("This action cannot be undone.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDeleteDialog = false
+                            viewModel.deleteTask()
+                            onNavigateBack()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) { Text("Delete") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                }
+            )
+        }
     }
 }
