@@ -1,5 +1,6 @@
 package com.example.csci215_final.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,16 +57,20 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.domain.model.ReminderFrequency
+import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.ExistingReminderViewModel
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
+import csci215final.composeapp.generated.resources.looseLeafPaperBKGD
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,223 +108,250 @@ fun ExistingReminderScreen(reminderId: Long, onNavigateBack: () -> Unit) {
         return
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Edit Reminder",
-                        fontFamily = FontFamily(Font(Res.font.Brownist))
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete reminder",
-                            tint = MaterialTheme.colorScheme.onPrimary)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Spacer(Modifier.height(4.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(Res.drawable.looseLeafPaperBKGD),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+        )
 
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = viewModel::onTitleChange,
-                label = {
-                    Text(
-                        text = "Title of Reminder",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                            fontWeight = FontWeight(400),
-                            color = Color(0xFF000000),
-                            textAlign = TextAlign.Right,
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "Edit Reminder",
+                            fontFamily = FontFamily(Font(Res.font.Brownist))
                         )
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.error != null && uiState.title.isBlank()
-            )
-
-            OutlinedTextField(
-                value = uiState.message,
-                onValueChange = viewModel::onMessageChange,
-                label = {
-                    Text(
-                    text = "Description of Reminder",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                        fontWeight = FontWeight(400),
-                        color = Color(0xFF000000),
-                        textAlign = TextAlign.Right,
-                    )
-                ) },
-                minLines = 2,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            HorizontalDivider()
-
-            // Active toggle
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Active", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                Switch(
-                    checked = uiState.isActive,
-                    onCheckedChange = viewModel::onActiveToggle
-                )
-            }
-
-            HorizontalDivider()
-
-            // Date
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "Date: ${Instant.fromEpochMilliseconds(uiState.scheduledTimeMillis).toDisplayDate()}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                OutlinedButton(onClick = { showDatePicker = true }) {
-                    Text("Pick Date")
-                }
-            }
-
-            // Time
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    "Time: ${Instant.fromEpochMilliseconds(uiState.scheduledTimeMillis).toShortTime()}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                OutlinedButton(onClick = { showTimePicker = true }) {
-                    Text("Pick Time")
-                }
-            }
-
-            HorizontalDivider()
-
-            // Frequency
-            Text("Repeat", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ReminderFrequency.entries.forEach { freq ->
-                    FilterChip(
-                        selected = uiState.frequency == freq,
-                        onClick = { viewModel.onFrequencyChange(freq) },
-                        label = {
-                            Text(
-                                freq.name.lowercase().replaceFirstChar { it.uppercase() },
-                                style = MaterialTheme.typography.labelMedium
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(
+                                Icons.Default.Delete, contentDescription = "Delete reminder",
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = CustomPurple,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    )
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Spacer(Modifier.height(4.dp))
+
+                OutlinedTextField(
+                    value = uiState.title,
+                    onValueChange = viewModel::onTitleChange,
+                    label = {
+                        Text(
+                            text = "Title of Reminder",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF000000),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = uiState.error != null && uiState.title.isBlank()
+                )
+
+                OutlinedTextField(
+                    value = uiState.message,
+                    onValueChange = viewModel::onMessageChange,
+                    label = {
+                        Text(
+                            text = "Description of Reminder",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF000000),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    },
+                    minLines = 2,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                HorizontalDivider()
+
+                // Active toggle
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Active",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Switch(
+                        checked = uiState.isActive,
+                        onCheckedChange = viewModel::onActiveToggle
                     )
                 }
-            }
 
-            if (uiState.error != null) {
-                Text(uiState.error!!, color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall)
-            }
+                HorizontalDivider()
 
-            Spacer(Modifier.height(8.dp))
-
-            Button(
-                onClick = viewModel::saveChanges,
-                enabled = !uiState.isSaving,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (uiState.isSaving) "Saving…" else "Save Changes")
-            }
-
-            Spacer(Modifier.height(24.dp))
-        }
-    }
-
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { viewModel.onScheduledTimeChange(it) }
-                    showDatePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    if (showTimePicker) {
-        AlertDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
-                    showTimePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
-            },
-            text = { TimePicker(state = timePickerState) }
-        )
-    }
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Reminder?") },
-            text = { Text("This action cannot be undone.") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDeleteDialog = false
-                        viewModel.deleteReminder()
-                        onNavigateBack()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
+                // Date
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Date: ${
+                            Instant.fromEpochMilliseconds(uiState.scheduledTimeMillis)
+                                .toDisplayDate()
+                        }",
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                ) { Text("Delete") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                    OutlinedButton(onClick = { showDatePicker = true }) {
+                        Text("Pick Date")
+                    }
+                }
+
+                // Time
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Time: ${
+                            Instant.fromEpochMilliseconds(uiState.scheduledTimeMillis).toShortTime()
+                        }",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    OutlinedButton(onClick = { showTimePicker = true }) {
+                        Text("Pick Time")
+                    }
+                }
+
+                HorizontalDivider()
+
+                // Frequency
+                Text(
+                    "Repeat",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ReminderFrequency.entries.forEach { freq ->
+                        FilterChip(
+                            selected = uiState.frequency == freq,
+                            onClick = { viewModel.onFrequencyChange(freq) },
+                            label = {
+                                Text(
+                                    freq.name.lowercase().replaceFirstChar { it.uppercase() },
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            }
+                        )
+                    }
+                }
+
+                if (uiState.error != null) {
+                    Text(
+                        uiState.error!!, color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                PurpleButton(
+                    text = "Save Changes",
+                    onClick = viewModel::saveChanges,
+                    isLoading = uiState.isSaving,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(24.dp))
             }
-        )
+        }
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { viewModel.onScheduledTimeChange(it) }
+                        showDatePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
+        if (showTimePicker) {
+            AlertDialog(
+                onDismissRequest = { showTimePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                },
+                text = { TimePicker(state = timePickerState) }
+            )
+        }
+
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Delete Reminder?") },
+                text = { Text("This action cannot be undone.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDeleteDialog = false
+                            viewModel.deleteReminder()
+                            onNavigateBack()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) { Text("Delete") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
+                }
+            )
+        }
     }
 }

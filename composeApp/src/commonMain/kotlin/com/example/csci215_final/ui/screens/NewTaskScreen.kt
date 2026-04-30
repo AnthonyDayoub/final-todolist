@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
+import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.NewTaskViewModel
@@ -102,7 +103,7 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = CustomPurple,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -193,13 +194,12 @@ fun NewTaskScreen(onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(8.dp))
 
-            Button(
+            PurpleButton(
+                text = "Save Task",
                 onClick = viewModel::saveTask,
-                enabled = !uiState.isSaving,
+                isLoading = uiState.isSaving,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (uiState.isSaving) "Saving…" else "Save Task")
-            }
+            )
 
             Spacer(Modifier.height(24.dp))
         }

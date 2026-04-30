@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
+import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.viewmodel.ExistingTaskViewModel
 import csci215final.composeapp.generated.resources.Brownist
@@ -106,7 +107,7 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
+                    containerColor = CustomPurple,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -185,13 +186,12 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
 
             Spacer(Modifier.height(8.dp))
 
-            Button(
+            PurpleButton(
+                text = "Save Changes",
                 onClick = viewModel::saveChanges,
-                enabled = !uiState.isSaving,
+                isLoading = uiState.isSaving,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (uiState.isSaving) "Saving…" else "Save Changes")
-            }
+            )
 
             Spacer(Modifier.height(24.dp))
         }
