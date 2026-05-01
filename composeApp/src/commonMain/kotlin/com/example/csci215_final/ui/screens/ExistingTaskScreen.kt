@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -124,7 +123,7 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = CustomPurple,
+                        containerColor = CustomRed,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary,
                         navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                     )

@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.csci215_final.ui.screens.CustomPurple
+import com.example.csci215_final.ui.screens.CustomRed
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.Font
@@ -30,9 +30,9 @@ fun PurpleButton(
         enabled = enabled && !isLoading,
         modifier = modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
-            containerColor = CustomPurple,
+            containerColor = CustomRed,
             contentColor = Color.White,
-            disabledContainerColor = CustomPurple.copy(alpha = 0.5f),
+            disabledContainerColor = CustomRed.copy(alpha = 0.5f),
             disabledContentColor = Color.White.copy(alpha = 0.7f)
         ),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)

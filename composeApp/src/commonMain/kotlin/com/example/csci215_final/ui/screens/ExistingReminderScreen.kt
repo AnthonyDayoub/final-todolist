@@ -143,7 +143,7 @@ fun ExistingReminderScreen(reminderId: Long, onNavigateBack: () -> Unit) {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = CustomPurple,
+                        containerColor = CustomRed,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary,
                         navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                     )

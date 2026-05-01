@@ -26,7 +26,8 @@ data class HomeUiState(
     val isFirstLaunch: Boolean = false,
     val quote: Quote? = null,
     val isQuoteLoading: Boolean = false,
-    val quoteError: String? = null
+    val quoteError: String? = null,
+    val greeting: String = ""
 )
 
 class HomeViewModel(
@@ -73,6 +74,7 @@ class HomeViewModel(
 
     init {
         loadTodayQuote()
+        updateGreeting()
     }
 
     fun selectDate(date: LocalDate) {
@@ -93,6 +95,19 @@ class HomeViewModel(
                     )
                 }
         }
+    }
+
+    private fun updateGreeting() {
+        val hour = Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .hour
+        val timeGreeting = when (hour) {
+            in 5..11  -> "Good morning"
+            in 12..16 -> "Good afternoon"
+            in 17..20 -> "Good evening"
+            else      -> "Good night"
+        }
+        _uiState.value = _uiState.value.copy(greeting = timeGreeting)
     }
 
     fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {

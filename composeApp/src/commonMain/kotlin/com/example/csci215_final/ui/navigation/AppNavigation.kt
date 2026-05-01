@@ -25,16 +25,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.jetbrains.compose.resources.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.csci215_final.ui.screens.CustomRed
 import com.example.csci215_final.ui.screens.ExistingReminderScreen
 import com.example.csci215_final.ui.screens.ExistingTaskScreen
 import com.example.csci215_final.ui.screens.HomeScreen
 import com.example.csci215_final.ui.screens.NewReminderScreen
 import com.example.csci215_final.ui.screens.NewTaskScreen
+import csci215final.composeapp.generated.resources.Brownist
+import csci215final.composeapp.generated.resources.Res
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -87,9 +92,11 @@ fun AppNavigation() {
             ModalDrawerSheet {
                 Spacer(Modifier.height(24.dp))
                 Text(
-                    "Focus Todo",
+                    "Check it Off", // Changed name
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+                    fontFamily = FontFamily(Font(Res.font.Brownist)),
+                    color = CustomRed // Added your color
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 drawerItems.forEach { item ->
