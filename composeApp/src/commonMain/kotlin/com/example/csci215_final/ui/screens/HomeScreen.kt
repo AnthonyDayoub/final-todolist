@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.domain.model.Reminder
 import com.example.csci215_final.domain.model.TaskWithRelations
+import com.example.csci215_final.ui.components.UniversalItemCard
 import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.HomeViewModel
 import csci215final.composeapp.generated.resources.*
@@ -134,21 +135,34 @@ fun HomeScreen(
                     item { EmptyState("No reminders for today.") }
                 } else {
                     items(reminders, key = { "rem_${it.id}" }) { reminder ->
-                        ReminderCard(reminder) { onNavigateToEditReminder(reminder.id) }
+                        UniversalItemCard(
+                            title = reminder.title,
+                            time = reminder.scheduledTime.toShortTime(),
+                            description = reminder.message, // Use the actual message
+                            isTask = false,
+                            isCompleted = false,
+                            onCheckedChange = { /* dismiss */ },
+                            onClick = { onNavigateToEditReminder(reminder.id) }
+                        )
                     }
                 }
 
+                // TASKS SECTION (Make sure this header is here!)
                 item { SectionHeader("Today's Tasks") }
                 if (tasks.isEmpty()) {
                     item { EmptyState("Your list is clear!") }
                 } else {
                     items(tasks, key = { "task_${it.task.id}" }) { taskWithRelations ->
-                        TaskCard(
-                            taskWithRelations = taskWithRelations,
-                            onEditTask = { onNavigateToEditTask(taskWithRelations.task.id) },
-                            onToggleCompletion = { isChecked ->
+                        UniversalItemCard(
+                            title = taskWithRelations.task.title,
+                            time = taskWithRelations.task.dueDate.toShortTime(),
+                            description = taskWithRelations.task.description ?: "No description",
+                            isTask = true,
+                            isCompleted = taskWithRelations.task.isCompleted,
+                            onCheckedChange = { isChecked ->
                                 viewModel.updateTaskCompletion(taskWithRelations.task.id, isChecked)
-                            }
+                            },
+                            onClick = { onNavigateToEditTask(taskWithRelations.task.id) }
                         )
                     }
                 }
@@ -214,67 +228,7 @@ private fun GreetingHeader(greeting: String, taskCount: Int, reminderCount: Int)
     }
 }
 
-@Composable
-private fun TaskCard(
-    taskWithRelations: TaskWithRelations,
-    onEditTask: () -> Unit,
-    onToggleCompletion: (Boolean) -> Unit
-) {
-    val isDone = taskWithRelations.task.isCompleted
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBackground),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Row(
-            modifier = Modifier.clickable { onEditTask() }.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(
-                    if (isDone) Res.drawable.filled_check else Res.drawable.empty_check
-                ),
-                contentDescription = null,
-                modifier = Modifier.size(28.dp).clickable { onToggleCompletion(!isDone) }
-            )
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = taskWithRelations.task.title,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                        textDecoration = if (isDone) TextDecoration.LineThrough else null,
-                        color = if (isDone) Color.Gray else Color.Black
-                    )
-                )
-                Text(
-                    text = taskWithRelations.task.dueDate.toShortTime(),
-                    style = TextStyle(fontSize = 14.sp, color = CustomRed, fontFamily = FontFamily(Font(Res.font.Papernotes)))
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() },
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = CustomLightOrange.copy(alpha = 0.7f))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(reminder.scheduledTime.toShortTime(), style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))
-            Text(reminder.title, style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(Res.font.Papernotes))))
-        }
-    }
-}
 
 @Composable
 private fun SectionHeader(title: String) {
