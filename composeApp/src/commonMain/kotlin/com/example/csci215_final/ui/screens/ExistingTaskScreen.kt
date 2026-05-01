@@ -34,6 +34,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
+import com.example.csci215_final.ui.components.toShortTime
 import com.example.csci215_final.viewmodel.ExistingTaskViewModel
 import csci215final.composeapp.generated.resources.Bobby
 import csci215final.composeapp.generated.resources.Brownist
@@ -61,6 +64,8 @@ import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
 import csci215final.composeapp.generated.resources.looseLeafPaperBKGD
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.painterResource
 
@@ -75,9 +80,20 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
     // val allDistractions by viewModel.allDistractions.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.dueDateMillis.takeIf { it > 0 }
+    )
+    val initialDt = remember(uiState.isLoading) {
+        if (uiState.dueDateMillis > 0)
+            Instant.fromEpochMilliseconds(uiState.dueDateMillis).toLocalDateTime(TimeZone.currentSystemDefault())
+        else null
+    }
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialDt?.hour ?: 9,
+        initialMinute = initialDt?.minute ?: 0,
+        is24Hour = false
     )
 
     val bobbyFont = FontFamily(Font(Res.font.Bobby))
@@ -197,6 +213,24 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
                     }
                 }
 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Time: ${
+                            Instant.fromEpochMilliseconds(uiState.dueDateMillis).toShortTime()
+                        }",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    OutlinedButton(onClick = { showTimePicker = true }) {
+                        Text("Change Time",
+                            fontFamily = bobbyFont
+                        )
+                    }
+                }
+
                 if (uiState.error != null) {
                     Text(
                         uiState.error!!, color = MaterialTheme.colorScheme.error,
@@ -217,6 +251,22 @@ fun ExistingTaskScreen(taskId: Long, onNavigateBack: () -> Unit) {
 
                 Spacer(Modifier.height(24.dp))
             }
+        }
+
+        if (showTimePicker) {
+            AlertDialog(
+                onDismissRequest = { showTimePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                },
+                text = { TimePicker(state = timePickerState) }
+            )
         }
 
         if (showDatePicker) {
