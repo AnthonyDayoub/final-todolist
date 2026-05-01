@@ -1,7 +1,6 @@
 package com.example.csci215_final.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,6 +42,7 @@ import org.jetbrains.compose.resources.painterResource
 // --- THEME CONSTANTS ---
 val CustomRed = Color(0xFF870000)
 val CustomLightOrange = Color(0xFFF2C9AC)
+val CustomVeryLightOrange = Color(0xFFffecde)
 val CardBackground = Color.White.copy(alpha = 0.9f)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,8 +60,8 @@ fun HomeScreen(
     val reminders by viewModel.remindersForSelectedDate.collectAsState()
     val selectedDate by viewModel.selectedDate.collectAsState()
 
-    var showNewTaskSheet by remember { mutableStateOf(false) }
-    var showNewReminderSheet by remember { mutableStateOf(false) }
+    // State for the Choice Dialog
+    var showChoiceDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // 1. Background Layer
@@ -103,23 +103,23 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 FloatingActionButton(
-                    onClick = onNavigateToNewTask,
+                    onClick = { showChoiceDialog = true },
                     containerColor = CustomRed,
                     contentColor = Color.White
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Task")
+                    Icon(Icons.Default.Add, contentDescription = "Add New")
                 }
             }
         ) { paddingValues ->
+            // Main Content Area
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 80.dp) // Space for FAB
+                contentPadding = PaddingValues(bottom = 80.dp)
             ) {
-                // Header & Calendar Section
                 item {
                     Spacer(Modifier.height(16.dp))
                     GreetingHeader(uiState.greeting, tasks.size, reminders.size)
@@ -129,7 +129,6 @@ fun HomeScreen(
                     )
                 }
 
-                // Reminders Section
                 item { SectionHeader("Reminders") }
                 if (reminders.isEmpty()) {
                     item { EmptyState("No reminders for today.") }
@@ -139,7 +138,6 @@ fun HomeScreen(
                     }
                 }
 
-                // Tasks Section
                 item { SectionHeader("Today's Tasks") }
                 if (tasks.isEmpty()) {
                     item { EmptyState("Your list is clear!") }
@@ -155,30 +153,48 @@ fun HomeScreen(
                     }
                 }
 
-                // Quote Section
                 item { QuoteCard(uiState) }
             }
-        }
-    }
 
-    // Bottom Sheets
-    if (showNewTaskSheet) {
-        ModalBottomSheet(onDismissRequest = { showNewTaskSheet = false }) {
-            Text("Add New Task UI Goes Here", modifier = Modifier.padding(32.dp))
+            // Choice Dialog of Floating Plus Button
+            if (showChoiceDialog) {
+                AlertDialog(
+                    onDismissRequest = { showChoiceDialog = false },
+                    containerColor = CustomVeryLightOrange,
+                    title = {
+                        Text(
+                            "Create New Entry",
+                            fontFamily = FontFamily(Font(Res.font.Brownist))
+                        )
+                    },
+                    text = { Text("Would you like to add a Task or a Reminder?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showChoiceDialog = false
+                            onNavigateToNewTask()
+                        }) {
+                            Text("New Task", color = CustomRed, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showChoiceDialog = false
+                            onNavigateToNewReminder()
+                        }) {
+                            Text("New Reminder", color = CustomRed, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                )
+            }
         }
     }
 }
 
-/**
- * Cleaned up Header with better typography
- */
+// --- HELPER COMPOSABLES ---
+
 @Composable
 private fun GreetingHeader(greeting: String, taskCount: Int, reminderCount: Int) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(
             text = greeting,
             style = TextStyle(
@@ -198,9 +214,6 @@ private fun GreetingHeader(greeting: String, taskCount: Int, reminderCount: Int)
     }
 }
 
-/**
- * Task Card with better hit-targets and cleaner visuals
- */
 @Composable
 private fun TaskCard(
     taskWithRelations: TaskWithRelations,
@@ -208,7 +221,6 @@ private fun TaskCard(
     onToggleCompletion: (Boolean) -> Unit
 ) {
     val isDone = taskWithRelations.task.isCompleted
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -216,9 +228,7 @@ private fun TaskCard(
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .clickable { onEditTask() }
-                .padding(16.dp),
+            modifier = Modifier.clickable { onEditTask() }.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
@@ -226,13 +236,9 @@ private fun TaskCard(
                     if (isDone) Res.drawable.filled_check else Res.drawable.empty_check
                 ),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(28.dp)
-                    .clickable { onToggleCompletion(!isDone) }
+                modifier = Modifier.size(28.dp).clickable { onToggleCompletion(!isDone) }
             )
-
             Spacer(Modifier.width(12.dp))
-
             Column {
                 Text(
                     text = taskWithRelations.task.title,
@@ -245,11 +251,7 @@ private fun TaskCard(
                 )
                 Text(
                     text = taskWithRelations.task.dueDate.toShortTime(),
-                    style = TextStyle(
-                        fontSize = 14.sp,
-                        color = CustomRed,
-                        fontFamily = FontFamily(Font(Res.font.Papernotes))
-                    )
+                    style = TextStyle(fontSize = 14.sp, color = CustomRed, fontFamily = FontFamily(Font(Res.font.Papernotes)))
                 )
             }
         }
@@ -268,14 +270,8 @@ private fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                reminder.scheduledTime.toShortTime(),
-                style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            )
-            Text(
-                reminder.title,
-                style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(Res.font.Papernotes)))
-            )
+            Text(reminder.scheduledTime.toShortTime(), style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))
+            Text(reminder.title, style = TextStyle(fontSize = 18.sp, fontFamily = FontFamily(Font(Res.font.Papernotes))))
         }
     }
 }
@@ -285,12 +281,7 @@ private fun SectionHeader(title: String) {
     Column(Modifier.padding(top = 8.dp)) {
         Text(
             text = title.uppercase(),
-            style = TextStyle(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Gray,
-                letterSpacing = 1.sp
-            )
+            style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Gray, letterSpacing = 1.sp)
         )
         HorizontalDivider(Modifier.padding(top = 4.dp), thickness = 1.dp, color = Color.LightGray)
     }
@@ -325,46 +316,31 @@ private fun QuoteCard(uiState: com.example.csci215_final.viewmodel.HomeUiState) 
 }
 
 @Composable
-fun WeekCalendar(
-    selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
-) {
+fun WeekCalendar(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
     val daysToSubtract = if (selectedDate.dayOfWeek.isoDayNumber == 7) 0 else selectedDate.dayOfWeek.isoDayNumber
     val weekStart = selectedDate.minus(DatePeriod(days = daysToSubtract))
     val daysOfWeekLabels = listOf("SU", "M", "T", "W", "R", "F", "SA")
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = CustomLightOrange.copy(alpha = 0.5f)
-        ),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = CustomLightOrange.copy(alpha = 0.5f)),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Navigation Arrow: Back 1 Week
                 IconButton(onClick = { onDateSelected(selectedDate.minus(DatePeriod(days = 7))) }) {
                     Text("<", fontSize = 24.sp, fontFamily = FontFamily(Font(Res.font.Brownist)))
                 }
-
                 daysOfWeekLabels.forEachIndexed { index, dayLabel ->
                     val dateForDay = weekStart.plus(DatePeriod(days = index))
                     val isSelected = dateForDay == selectedDate
-
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clickable { onDateSelected(dateForDay) }
-                            .padding(4.dp)
+                        modifier = Modifier.clickable { onDateSelected(dateForDay) }.padding(4.dp)
                     ) {
                         Text(
                             text = dayLabel,
@@ -375,16 +351,11 @@ fun WeekCalendar(
                         )
                     }
                 }
-
-                // Navigation Arrow: Forward 1 Week
                 IconButton(onClick = { onDateSelected(selectedDate.plus(DatePeriod(days = 7))) }) {
                     Text(">", fontSize = 24.sp, fontFamily = FontFamily(Font(Res.font.Brownist)))
                 }
             }
-
             Spacer(Modifier.height(8.dp))
-
-            // Your original active day display text
             Text(
                 text = "${selectedDate.dayOfWeek.name}, ${selectedDate.month.name} ${selectedDate.dayOfMonth}".uppercase(),
                 fontFamily = FontFamily(Font(Res.font.Brownist)),
