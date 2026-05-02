@@ -8,3 +8,4 @@ import kotlinx.serialization.Serializable
 @Serializable data class  ExistingTaskRoute(val taskId: Long)
 @Serializable data class  ExistingReminderRoute(val reminderId: Long)
 @Serializable data object HelperDistractionRoute
+@Serializable data object ArchiveRoute

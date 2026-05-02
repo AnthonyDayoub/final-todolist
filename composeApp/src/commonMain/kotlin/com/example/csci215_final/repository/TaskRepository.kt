@@ -9,6 +9,7 @@ interface TaskRepository {
     fun getAllTasksWithRelations(): Flow<List<TaskWithRelations>>
     fun getTasksForDateRange(startMillis: Long, endMillis: Long): Flow<List<Task>>
     fun getIncompleteTasks(): Flow<List<Task>>
+    fun getCompletedTasks(): Flow<List<Task>>
     suspend fun getTaskById(id: Long): Task?
     suspend fun getTaskWithRelations(id: Long): TaskWithRelations?
     suspend fun insertTask(task: Task): Long

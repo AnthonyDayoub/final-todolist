@@ -9,6 +9,7 @@ import com.example.csci215_final.repository.TaskRepository
 import com.example.csci215_final.repository.impl.QuoteRepositoryImpl
 import com.example.csci215_final.repository.impl.ReminderRepositoryImpl
 import com.example.csci215_final.repository.impl.TaskRepositoryImpl
+import com.example.csci215_final.viewmodel.ArchiveViewModel
 import com.example.csci215_final.viewmodel.ExistingReminderViewModel
 import com.example.csci215_final.viewmodel.ExistingTaskViewModel
 import com.example.csci215_final.viewmodel.HomeViewModel
@@ -44,4 +45,6 @@ object ServiceLocator {
     fun existingTaskViewModel(taskId: Long) = ExistingTaskViewModel(taskId, taskRepository)
 
     fun existingReminderViewModel(reminderId: Long) = ExistingReminderViewModel(reminderId, reminderRepository)
+
+    fun archiveViewModel() = ArchiveViewModel(taskRepository)
 }

@@ -25,6 +25,9 @@ class TaskRepositoryImpl(private val taskDao: TaskDao) : TaskRepository {
     override fun getIncompleteTasks(): Flow<List<Task>> =
         taskDao.getIncompleteTasks().map { list -> list.map { it.toDomain() } }
 
+    override fun getCompletedTasks(): Flow<List<Task>> =
+        taskDao.getCompletedTasks().map { list -> list.map { it.toDomain() } }
+
     override suspend fun getTaskById(id: Long): Task? =
         taskDao.getTaskById(id)?.toDomain()
 

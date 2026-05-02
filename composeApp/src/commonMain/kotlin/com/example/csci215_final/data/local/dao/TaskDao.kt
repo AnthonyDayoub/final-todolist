@@ -37,6 +37,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE is_completed = 0 ORDER BY due_date_millis ASC")
     fun getIncompleteTasks(): Flow<List<TaskEntity>>
 
+    @Query("SELECT * FROM tasks WHERE is_completed = 1 ORDER BY due_date_millis DESC")
+    fun getCompletedTasks(): Flow<List<TaskEntity>>
+
     @Transaction
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskWithRelations(taskId: Long): TaskWithRelationsEntity?

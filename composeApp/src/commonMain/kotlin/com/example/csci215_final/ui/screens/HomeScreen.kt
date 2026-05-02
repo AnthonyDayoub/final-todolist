@@ -130,6 +130,12 @@ fun HomeScreen(
                     )
                 }
 
+                item {
+                    SectionHeader("Quote of the Day")
+                    Spacer(Modifier.height(8.dp))
+                    QuoteCard(uiState, onRefresh = { viewModel.loadTodayQuote() })
+                }
+
                 item { SectionHeader("Reminders") }
                 if (reminders.isEmpty()) {
                     item { EmptyState("No reminders for today.") }
@@ -167,7 +173,6 @@ fun HomeScreen(
                     }
                 }
 
-                item { QuoteCard(uiState) }
             }
 
             // Choice Dialog of Floating Plus Button
@@ -252,18 +257,45 @@ private fun EmptyState(message: String) {
 }
 
 @Composable
-private fun QuoteCard(uiState: com.example.csci215_final.viewmodel.HomeUiState) {
+private fun QuoteCard(uiState: com.example.csci215_final.viewmodel.HomeUiState, onRefresh: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = CustomLightOrange.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(Modifier.padding(16.dp)) {
-            if (uiState.isQuoteLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            } else if (uiState.quote != null) {
-                Text("“${uiState.quote.text}”", fontStyle = FontStyle.Italic, fontSize = 16.sp)
-                Text("- ${uiState.quote.author}", modifier = Modifier.align(Alignment.End), fontSize = 12.sp)
+            when {
+                uiState.isQuoteLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+                uiState.quote != null -> {
+                    Text(
+                        "\"${uiState.quote.text}\"",
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 16.sp,
+                        fontFamily = FontFamily(Font(Res.font.Papernotes))
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "— ${uiState.quote.author}",
+                        modifier = Modifier.align(Alignment.End),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.DarkGray
+                    )
+                }
+                uiState.quoteError != null -> {
+                    Text(
+                        "Couldn't load quote.",
+                        color = Color.Gray,
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onRefresh, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                        Text("Retry", color = CustomRed)
+                    }
+                }
             }
         }
     }

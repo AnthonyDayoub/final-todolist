@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAlert
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
@@ -32,6 +33,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.csci215_final.ui.screens.ArchiveScreen
 import com.example.csci215_final.ui.screens.CustomRed
 import com.example.csci215_final.ui.screens.ExistingReminderScreen
 import com.example.csci215_final.ui.screens.ExistingTaskScreen
@@ -82,6 +84,11 @@ fun AppNavigation() {
         DrawerItem("New Reminder", Icons.Default.AddAlert, NewReminderRoute::class) {
             navigateAndClose(NewReminderRoute::class) {
                 navController.navigate(NewReminderRoute) { launchSingleTop = true }
+            }
+        },
+        DrawerItem("Archive", Icons.Default.Archive, ArchiveRoute::class) {
+            navigateAndClose(ArchiveRoute::class) {
+                navController.navigate(ArchiveRoute) { launchSingleTop = true }
             }
         },
     )
@@ -161,6 +168,18 @@ fun AppNavigation() {
                     onNavigateBack = {
                         selectedKey = HomeRoute::class
                         navController.popBackStack()
+                    }
+                )
+            }
+
+            composable<ArchiveRoute> {
+                ArchiveScreen(
+                    onNavigateBack = {
+                        selectedKey = HomeRoute::class
+                        navController.popBackStack()
+                    },
+                    onNavigateToEditTask = { taskId ->
+                        navController.navigate(ExistingTaskRoute(taskId))
                     }
                 )
             }
