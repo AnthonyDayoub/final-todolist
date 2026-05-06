@@ -70,10 +70,10 @@ class ExistingTaskViewModel(
     }
 
     fun onDueDateChange(millis: Long) {
-        // Preserve current time when the date changes (DatePicker returns UTC midnight)
         val tz = TimeZone.currentSystemDefault()
         val currentTime = Instant.fromEpochMilliseconds(_uiState.value.dueDateMillis).toLocalDateTime(tz).time
-        val newDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(tz).date
+        // DatePicker returns UTC midnight — read the date in UTC to avoid a timezone day-shift
+        val newDate = Instant.fromEpochMilliseconds(millis).toLocalDateTime(TimeZone.UTC).date
         val combined = LocalDateTime(newDate, currentTime).toInstant(tz).toEpochMilliseconds()
         _uiState.value = _uiState.value.copy(dueDateMillis = combined)
     }

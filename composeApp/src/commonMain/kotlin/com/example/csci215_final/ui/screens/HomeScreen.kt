@@ -70,7 +70,7 @@ fun HomeScreen(
             painter = painterResource(Res.drawable.looseLeafPaperBKGD),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.FillBounds
         )
 
         Scaffold(
@@ -147,7 +147,7 @@ fun HomeScreen(
                             description = reminder.message, // Use the actual message
                             isTask = false,
                             isCompleted = false,
-                            onCheckedChange = { /* dismiss */ },
+                            onCheckedChange = { viewModel.dismissReminder(reminder.id) },
                             onClick = { onNavigateToEditReminder(reminder.id) }
                         )
                     }

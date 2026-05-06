@@ -180,6 +180,9 @@ fun AppNavigation() {
                     },
                     onNavigateToEditTask = { taskId ->
                         navController.navigate(ExistingTaskRoute(taskId))
+                    },
+                    onNavigateToEditReminder = { reminderId ->
+                        navController.navigate(ExistingReminderRoute(reminderId))
                     }
                 )
             }

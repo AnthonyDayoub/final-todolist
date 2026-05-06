@@ -116,4 +116,10 @@ class HomeViewModel(
             taskRepository.updateTask(task.copy(isCompleted = isCompleted))
         }
     }
+
+    fun dismissReminder(reminderId: Long) {
+        viewModelScope.launch {
+            reminderRepository.setReminderActive(reminderId, false)
+        }
+    }
 }

@@ -58,7 +58,7 @@ fun UniversalItemCard(
                 checked = isCompleted,
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
-                    checkedColor = if (isTask) Color.Blue else CustomRed
+                    checkedColor = CustomRed
                 )
             )
 

@@ -46,5 +46,5 @@ object ServiceLocator {
 
     fun existingReminderViewModel(reminderId: Long) = ExistingReminderViewModel(reminderId, reminderRepository)
 
-    fun archiveViewModel() = ArchiveViewModel(taskRepository)
+    fun archiveViewModel() = ArchiveViewModel(taskRepository, reminderRepository)
 }

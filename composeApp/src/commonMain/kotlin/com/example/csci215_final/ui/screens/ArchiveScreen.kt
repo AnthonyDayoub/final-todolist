@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.csci215_final.di.ServiceLocator
+import com.example.csci215_final.domain.model.Reminder
 import com.example.csci215_final.domain.model.Task
 import com.example.csci215_final.ui.components.UniversalItemCard
 import com.example.csci215_final.ui.components.toDisplayDate
@@ -52,12 +53,13 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun ArchiveScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToEditTask: (Long) -> Unit
+    onNavigateToEditTask: (Long) -> Unit,
+    onNavigateToEditReminder: (Long) -> Unit
 ) {
     val viewModel: ArchiveViewModel = viewModel { ServiceLocator.archiveViewModel() }
     val completedTasks by viewModel.completedTasks.collectAsState()
+    val dismissedReminders by viewModel.dismissedReminders.collectAsState()
 
-    // Group tasks by date (most recent first — DAO already sorted DESC)
     val tasksByDate: Map<String, List<Task>> = completedTasks
         .groupBy { task ->
             task.dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date.let { date ->
@@ -65,12 +67,21 @@ fun ArchiveScreen(
             }
         }
 
+    val remindersByDate: Map<String, List<Reminder>> = dismissedReminders
+        .groupBy { reminder ->
+            reminder.scheduledTime.toLocalDateTime(TimeZone.currentSystemDefault()).date.let { date ->
+                "${date.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${date.dayOfMonth}, ${date.year}"
+            }
+        }
+
+    val isEmpty = completedTasks.isEmpty() && dismissedReminders.isEmpty()
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(Res.drawable.looseLeafPaperBKGD),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.FillBounds
         )
 
         Scaffold(
@@ -96,13 +107,13 @@ fun ArchiveScreen(
                 )
             }
         ) { paddingValues ->
-            if (completedTasks.isEmpty()) {
+            if (isEmpty) {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "No completed tasks yet.",
+                        "Nothing archived yet.",
                         style = TextStyle(
                             fontSize = 18.sp,
                             fontFamily = FontFamily(Font(Res.font.Papernotes)),
@@ -121,20 +132,47 @@ fun ArchiveScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
-                    tasksByDate.forEach { (dateLabel, tasks) ->
-                        item(key = "header_$dateLabel") {
-                            DateSectionHeader(dateLabel)
+                    if (completedTasks.isNotEmpty()) {
+                        item(key = "tasks_header") {
+                            SectionHeader("Completed Tasks")
                         }
-                        items(tasks, key = { "archive_${it.id}" }) { task ->
-                            UniversalItemCard(
-                                title = task.title,
-                                time = task.dueDate.toShortTime(),
-                                description = task.description.ifBlank { "No description" },
-                                isTask = true,
-                                isCompleted = true,
-                                onCheckedChange = {},
-                                onClick = { onNavigateToEditTask(task.id) }
-                            )
+                        tasksByDate.forEach { (dateLabel, tasks) ->
+                            item(key = "header_task_$dateLabel") {
+                                DateSectionHeader(dateLabel)
+                            }
+                            items(tasks, key = { "archive_task_${it.id}" }) { task ->
+                                UniversalItemCard(
+                                    title = task.title,
+                                    time = task.dueDate.toShortTime(),
+                                    description = task.description.ifBlank { "No description" },
+                                    isTask = true,
+                                    isCompleted = true,
+                                    onCheckedChange = {},
+                                    onClick = { onNavigateToEditTask(task.id) }
+                                )
+                            }
+                        }
+                    }
+
+                    if (dismissedReminders.isNotEmpty()) {
+                        item(key = "reminders_header") {
+                            SectionHeader("Dismissed Reminders")
+                        }
+                        remindersByDate.forEach { (dateLabel, reminders) ->
+                            item(key = "header_rem_$dateLabel") {
+                                DateSectionHeader(dateLabel)
+                            }
+                            items(reminders, key = { "archive_rem_${it.id}" }) { reminder ->
+                                UniversalItemCard(
+                                    title = reminder.title,
+                                    time = reminder.scheduledTime.toShortTime(),
+                                    description = reminder.message.ifBlank { "No description" },
+                                    isTask = false,
+                                    isCompleted = true,
+                                    onCheckedChange = {},
+                                    onClick = { onNavigateToEditReminder(reminder.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -144,16 +182,40 @@ fun ArchiveScreen(
 }
 
 @Composable
+private fun SectionHeader(title: String) {
+    androidx.compose.foundation.layout.Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp, bottom = 4.dp)
+    ) {
+        Text(
+            text = title.uppercase(),
+            style = TextStyle(
+                fontSize = 14.sp,
+                fontFamily = FontFamily(Font(Res.font.Brownist)),
+                color = Color.Gray,
+                letterSpacing = 1.sp
+            )
+        )
+        androidx.compose.material3.HorizontalDivider(
+            modifier = Modifier.padding(top = 4.dp),
+            thickness = 1.dp,
+            color = Color.LightGray
+        )
+    }
+}
+
+@Composable
 private fun DateSectionHeader(label: String) {
     androidx.compose.foundation.layout.Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp, bottom = 4.dp)
+            .padding(top = 12.dp, bottom = 4.dp)
     ) {
         Text(
             text = label.uppercase(),
             style = TextStyle(
-                fontSize = 13.sp,
+                fontSize = 28.sp,
                 fontFamily = FontFamily(Font(Res.font.Brownist)),
                 color = CustomRed,
                 letterSpacing = 1.sp

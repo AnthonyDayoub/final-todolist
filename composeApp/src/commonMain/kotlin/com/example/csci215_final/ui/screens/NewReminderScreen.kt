@@ -101,7 +101,7 @@ fun NewReminderScreen(onNavigateBack: () -> Unit) {
             painter = painterResource(Res.drawable.looseLeafPaperBKGD),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
         )
 
         Scaffold(
