@@ -2,8 +2,6 @@ package com.example.csci215_final.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.example.csci215_final.data.local.dao.DistractionDao
-import com.example.csci215_final.data.local.dao.HelperDao
 import com.example.csci215_final.data.local.dao.ReminderDao
 import com.example.csci215_final.data.local.dao.TaskDao
 import com.example.csci215_final.data.local.entity.DistractionEntity
@@ -20,14 +18,13 @@ import com.example.csci215_final.data.local.entity.TaskHelperCrossRef
         DistractionEntity::class,
         ReminderEntity::class,
         TaskHelperCrossRef::class,
-        TaskDistractionCrossRef::class
+        TaskDistractionCrossRef::class,
     ],
     version = 1,
-    exportSchema = true
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
-    abstract fun helperDao(): HelperDao
-    abstract fun distractionDao(): DistractionDao
+
     abstract fun reminderDao(): ReminderDao
 }

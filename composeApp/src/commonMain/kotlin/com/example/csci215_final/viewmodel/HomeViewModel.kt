@@ -27,16 +27,15 @@ data class HomeUiState(
     val quote: Quote? = null,
     val isQuoteLoading: Boolean = false,
     val quoteError: String? = null,
-    val greeting: String = ""
+    val greeting: String = "",
 )
 
 class HomeViewModel(
     private val taskRepository: TaskRepository,
     private val reminderRepository: ReminderRepository,
     private val quoteRepository: QuoteRepository,
-    isFirstLaunch: Boolean = false
+    isFirstLaunch: Boolean = false,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(HomeUiState(isFirstLaunch = isFirstLaunch, isQuoteLoading = true))
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -46,19 +45,22 @@ class HomeViewModel(
     val todayTasks: StateFlow<List<TaskWithRelations>> =
         combine(taskRepository.getAllTasksWithRelations(), _selectedDate) { tasks, date ->
             tasks.filter { twr ->
-                twr.task.dueDate.toLocalDateTime(TimeZone.currentSystemDefault()).date == date
+                twr.task.dueDate
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date == date
             }
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
+            initialValue = emptyList(),
         )
 
     val remindersForSelectedDate: StateFlow<List<Reminder>> =
         combine(reminderRepository.getActiveReminders(), _selectedDate) { reminders, date ->
             reminders.filter { reminder ->
                 val reminderDate = reminder.scheduledTime
-                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
                 when (reminder.frequency) {
                     ReminderFrequency.ONCE -> reminderDate == date
                     ReminderFrequency.DAILY -> true
@@ -69,7 +71,7 @@ class HomeViewModel(
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
+            initialValue = emptyList(),
         )
 
     init {
@@ -84,28 +86,29 @@ class HomeViewModel(
     fun loadTodayQuote() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isQuoteLoading = true, quoteError = null)
-            quoteRepository.getTodayQuote()
+            quoteRepository
+                .getTodayQuote()
                 .onSuccess { quote ->
                     _uiState.value = _uiState.value.copy(quote = quote, isQuoteLoading = false)
-                }
-                .onFailure { error ->
+                }.onFailure { error ->
                     _uiState.value = _uiState.value.copy(
                         isQuoteLoading = false,
-                        quoteError = error.message ?: "Failed to load quote"
+                        quoteError = error.message ?: "Failed to load quote",
                     )
                 }
         }
     }
 
     private fun updateGreeting() {
-        val hour = Clock.System.now()
+        val hour = Clock.System
+            .now()
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .hour
         val timeGreeting = when (hour) {
-            in 5..11  -> "Good morning"
+            in 5..11 -> "Good morning"
             in 12..16 -> "Good afternoon"
             in 17..20 -> "Good evening"
-            else      -> "Good night"
+            else -> "Good night"
         }
         _uiState.value = _uiState.value.copy(greeting = timeGreeting)
     }

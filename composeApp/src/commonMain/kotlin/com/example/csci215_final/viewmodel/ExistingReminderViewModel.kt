@@ -26,14 +26,13 @@ data class ExistingReminderUiState(
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
 class ExistingReminderViewModel(
     private val reminderId: Long,
-    private val reminderRepository: ReminderRepository
+    private val reminderRepository: ReminderRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(ExistingReminderUiState())
     val uiState: StateFlow<ExistingReminderUiState> = _uiState.asStateFlow()
 
@@ -55,7 +54,7 @@ class ExistingReminderViewModel(
                 scheduledTimeMillis = reminder.scheduledTime.toEpochMilliseconds(),
                 frequency = reminder.frequency,
                 isActive = reminder.isActive,
-                isLoading = false
+                isLoading = false,
             )
         }
     }
@@ -106,7 +105,7 @@ class ExistingReminderViewModel(
                 message = state.message.trim(),
                 frequency = state.frequency,
                 scheduledTime = kotlinx.datetime.Instant.fromEpochMilliseconds(state.scheduledTimeMillis),
-                isActive = state.isActive
+                isActive = state.isActive,
             )
             reminderRepository.updateReminder(updated)
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)

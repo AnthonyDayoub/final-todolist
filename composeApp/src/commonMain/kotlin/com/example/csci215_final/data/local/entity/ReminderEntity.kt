@@ -13,17 +13,17 @@ import androidx.room.PrimaryKey
             entity = TaskEntity::class,
             parentColumns = ["id"],
             childColumns = ["task_id"],
-            onDelete = ForeignKey.SET_NULL
-        )
+            onDelete = ForeignKey.SET_NULL,
+        ),
     ],
-    indices = [Index("task_id")]
+    indices = [Index("task_id")],
 )
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "message") val message: String = "",
-    @ColumnInfo(name = "frequency") val frequency: String,   // ReminderFrequency name()
+    @ColumnInfo(name = "frequency") val frequency: String, // ReminderFrequency name()
     @ColumnInfo(name = "scheduled_time_millis") val scheduledTimeMillis: Long,
     @ColumnInfo(name = "task_id") val taskId: Long? = null,
-    @ColumnInfo(name = "is_active") val isActive: Boolean = true
+    @ColumnInfo(name = "is_active") val isActive: Boolean = true,
 )

@@ -8,8 +8,9 @@ import com.example.csci215_final.repository.ReminderRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class ReminderRepositoryImpl(private val reminderDao: ReminderDao) : ReminderRepository {
-
+class ReminderRepositoryImpl(
+    private val reminderDao: ReminderDao,
+) : ReminderRepository {
     override fun getAllReminders(): Flow<List<Reminder>> =
         reminderDao.getAllReminders().map { list -> list.map { it.toDomain() } }
 

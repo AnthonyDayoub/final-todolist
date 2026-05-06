@@ -5,13 +5,10 @@ import com.example.csci215_final.data.remote.QuoteApiService
 import com.example.csci215_final.domain.model.Quote
 import com.example.csci215_final.repository.QuoteRepository
 
-class QuoteRepositoryImpl(private val apiService: QuoteApiService) : QuoteRepository {
-
+class QuoteRepositoryImpl(
+    private val apiService: QuoteApiService,
+) : QuoteRepository {
     override suspend fun getTodayQuote(): Result<Quote> = runCatching {
         apiService.fetchTodayQuote().toDomain()
-    }
-
-    override suspend fun getRandomQuote(): Result<Quote> = runCatching {
-        apiService.fetchRandomQuote().toDomain()
     }
 }

@@ -21,15 +21,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import org.jetbrains.compose.resources.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.csci215_final.ui.screens.CustomRed
+import com.example.csci215_final.ui.theme.CustomRed
 import csci215final.composeapp.generated.resources.Bobby
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Res
+import org.jetbrains.compose.resources.Font
 
 @Composable
 fun UniversalItemCard(
@@ -39,7 +39,7 @@ fun UniversalItemCard(
     isTask: Boolean, // True for Task, False for Reminder
     isCompleted: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -47,19 +47,19 @@ fun UniversalItemCard(
             .padding(vertical = 4.dp)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.8f)
-        )
+            containerColor = Color.White.copy(alpha = 0.8f),
+        ),
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.Top,
         ) {
             Checkbox(
                 checked = isCompleted,
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(
-                    checkedColor = CustomRed
-                )
+                    checkedColor = CustomRed,
+                ),
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -67,10 +67,10 @@ fun UniversalItemCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge.copy(
-                        textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                        textDecoration = if (isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                     ),
                     fontFamily = FontFamily(Font(Res.font.Brownist)),
-                    color = if (isCompleted) Color.Gray else Color.Unspecified
+                    color = if (isCompleted) Color.Gray else Color.Unspecified,
                 )
 
                 // 2. TIME
@@ -79,13 +79,13 @@ fun UniversalItemCard(
                         imageVector = Icons.Default.Schedule,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
-                        tint = Color.Gray
+                        tint = Color.Gray,
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = time,
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.Gray
+                        color = Color.Gray,
                     )
                 }
 
@@ -97,7 +97,7 @@ fun UniversalItemCard(
                     style = MaterialTheme.typography.bodyMedium,
                     fontFamily = FontFamily(Font(Res.font.Bobby)),
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

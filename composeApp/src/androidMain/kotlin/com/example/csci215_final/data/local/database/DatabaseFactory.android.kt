@@ -4,12 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-actual class DatabaseFactory(private val context: Context) {
-    actual fun create(): AppDatabase {
-        return Room.databaseBuilder(
+actual class DatabaseFactory(
+    private val context: Context,
+) {
+    actual fun create(): AppDatabase = Room
+        .databaseBuilder(
             context = context,
             klass = AppDatabase::class.java,
-            name = context.getDatabasePath("todolist.db").absolutePath
+            name = context.getDatabasePath("todolist.db").absolutePath,
         ).build()
-    }
 }

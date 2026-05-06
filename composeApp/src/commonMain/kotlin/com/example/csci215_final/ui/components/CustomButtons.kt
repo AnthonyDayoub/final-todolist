@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.csci215_final.ui.screens.CustomRed
+import com.example.csci215_final.ui.theme.CustomRed
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.Font
@@ -23,7 +23,7 @@ fun PurpleButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     Button(
         onClick = onClick,
@@ -33,17 +33,18 @@ fun PurpleButton(
             containerColor = CustomRed,
             contentColor = Color.White,
             disabledContainerColor = CustomRed.copy(alpha = 0.5f),
-            disabledContentColor = Color.White.copy(alpha = 0.7f)
+            disabledContentColor = Color.White.copy(alpha = 0.7f),
         ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        shape = androidx.compose.foundation.shape
+            .RoundedCornerShape(8.dp),
     ) {
         Text(
             text = if (isLoading) "Saving..." else text,
             style = TextStyle(
                 fontFamily = FontFamily(Font(Res.font.Brownist)),
                 fontSize = 26.sp,
-                fontWeight = FontWeight.Bold
-            )
+                fontWeight = FontWeight.Bold,
+            ),
         )
     }
 }

@@ -8,5 +8,5 @@ import androidx.room.PrimaryKey
 data class DistractionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "description") val description: String = ""
+    @ColumnInfo(name = "description") val description: String = "",
 )

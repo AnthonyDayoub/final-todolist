@@ -8,5 +8,5 @@ data class Task(
     val description: String = "",
     val dueDate: Instant,
     val createdAt: Instant,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
 )

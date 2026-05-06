@@ -17,7 +17,6 @@ import com.example.csci215_final.viewmodel.NewReminderViewModel
 import com.example.csci215_final.viewmodel.NewTaskViewModel
 
 object ServiceLocator {
-
     private lateinit var db: AppDatabase
     private lateinit var prefs: AppPreferences
 

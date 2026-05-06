@@ -18,7 +18,7 @@ fun TaskEntity.toDomain() = Task(
     description = description,
     dueDate = Instant.fromEpochMilliseconds(dueDateMillis),
     createdAt = Instant.fromEpochMilliseconds(createdAtMillis),
-    isCompleted = isCompleted
+    isCompleted = isCompleted,
 )
 
 fun Task.toEntity() = TaskEntity(
@@ -27,7 +27,7 @@ fun Task.toEntity() = TaskEntity(
     description = description,
     dueDateMillis = dueDate.toEpochMilliseconds(),
     createdAtMillis = createdAt.toEpochMilliseconds(),
-    isCompleted = isCompleted
+    isCompleted = isCompleted,
 )
 
 // ──────────── Helper ────────────
@@ -51,7 +51,7 @@ fun ReminderEntity.toDomain() = Reminder(
     frequency = ReminderFrequency.valueOf(frequency),
     scheduledTime = Instant.fromEpochMilliseconds(scheduledTimeMillis),
     taskId = taskId,
-    isActive = isActive
+    isActive = isActive,
 )
 
 fun Reminder.toEntity() = ReminderEntity(
@@ -61,7 +61,7 @@ fun Reminder.toEntity() = ReminderEntity(
     frequency = frequency.name,
     scheduledTimeMillis = scheduledTime.toEpochMilliseconds(),
     taskId = taskId,
-    isActive = isActive
+    isActive = isActive,
 )
 
 // ──────────── TaskWithRelations ────────────
@@ -70,7 +70,7 @@ fun TaskWithRelationsEntity.toDomain() = TaskWithRelations(
     task = task.toDomain(),
     helpers = helpers.map { it.toDomain() },
     distractions = distractions.map { it.toDomain() },
-    reminders = reminders.map { it.toDomain() }
+    reminders = reminders.map { it.toDomain() },
 )
 
 // ──────────── Quote ────────────

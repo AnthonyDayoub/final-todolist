@@ -9,5 +9,5 @@ data class Reminder(
     val frequency: ReminderFrequency,
     val scheduledTime: Instant,
     val taskId: Long? = null,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
 )

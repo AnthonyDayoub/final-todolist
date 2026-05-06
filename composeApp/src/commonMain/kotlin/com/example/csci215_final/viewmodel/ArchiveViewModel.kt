@@ -13,15 +13,14 @@ import kotlinx.coroutines.flow.stateIn
 
 class ArchiveViewModel(
     taskRepository: TaskRepository,
-    reminderRepository: ReminderRepository
+    reminderRepository: ReminderRepository,
 ) : ViewModel() {
-
     val completedTasks: StateFlow<List<Task>> = taskRepository
         .getCompletedTasks()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
+            initialValue = emptyList(),
         )
 
     val dismissedReminders: StateFlow<List<Reminder>> = reminderRepository
@@ -30,6 +29,6 @@ class ArchiveViewModel(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
+            initialValue = emptyList(),
         )
 }

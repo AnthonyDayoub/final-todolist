@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import org.jetbrains.compose.resources.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
@@ -34,22 +33,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.csci215_final.ui.screens.ArchiveScreen
-import com.example.csci215_final.ui.screens.CustomRed
 import com.example.csci215_final.ui.screens.ExistingReminderScreen
 import com.example.csci215_final.ui.screens.ExistingTaskScreen
 import com.example.csci215_final.ui.screens.HomeScreen
 import com.example.csci215_final.ui.screens.NewReminderScreen
 import com.example.csci215_final.ui.screens.NewTaskScreen
+import com.example.csci215_final.ui.theme.CustomRed
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Res
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.Font
 import kotlin.reflect.KClass
 
 private data class DrawerItem(
     val label: String,
     val icon: ImageVector,
     val key: KClass<*>,
-    val navigate: () -> Unit
+    val navigate: () -> Unit,
 )
 
 @Composable
@@ -103,7 +103,7 @@ fun AppNavigation() {
                     modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.titleLarge,
                     fontFamily = FontFamily(Font(Res.font.Brownist)),
-                    color = CustomRed // Added your color
+                    color = CustomRed, // Added your color
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 drawerItems.forEach { item ->
@@ -112,15 +112,15 @@ fun AppNavigation() {
                         label = { Text(item.label) },
                         selected = selectedKey == item.key,
                         onClick = item.navigate,
-                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
                     )
                 }
             }
-        }
+        },
     ) {
         NavHost(
             navController = navController,
-            startDestination = HomeRoute
+            startDestination = HomeRoute,
         ) {
             composable<HomeRoute> {
                 HomeScreen(
@@ -132,7 +132,7 @@ fun AppNavigation() {
                     },
                     onNavigateToEditReminder = { reminderId ->
                         navController.navigate(ExistingReminderRoute(reminderId))
-                    }
+                    },
                 )
             }
 
@@ -157,7 +157,7 @@ fun AppNavigation() {
                     onNavigateBack = {
                         selectedKey = HomeRoute::class
                         navController.popBackStack()
-                    }
+                    },
                 )
             }
 
@@ -168,7 +168,7 @@ fun AppNavigation() {
                     onNavigateBack = {
                         selectedKey = HomeRoute::class
                         navController.popBackStack()
-                    }
+                    },
                 )
             }
 
@@ -183,7 +183,7 @@ fun AppNavigation() {
                     },
                     onNavigateToEditReminder = { reminderId ->
                         navController.navigate(ExistingReminderRoute(reminderId))
-                    }
+                    },
                 )
             }
         }

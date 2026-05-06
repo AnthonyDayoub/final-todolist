@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class QuoteDto(
     @SerialName("q") val text: String,
-    @SerialName("a") val author: String
+    @SerialName("a") val author: String,
 )

@@ -25,13 +25,12 @@ data class NewReminderUiState(
     val linkedTaskId: Long? = null,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
 class NewReminderViewModel(
-    private val reminderRepository: ReminderRepository
+    private val reminderRepository: ReminderRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(NewReminderUiState())
     val uiState: StateFlow<NewReminderUiState> = _uiState.asStateFlow()
 
@@ -81,7 +80,7 @@ class NewReminderViewModel(
                 frequency = state.frequency,
                 scheduledTime = kotlinx.datetime.Instant.fromEpochMilliseconds(state.scheduledTimeMillis),
                 taskId = state.linkedTaskId,
-                isActive = true
+                isActive = true,
             )
             reminderRepository.insertReminder(reminder)
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)

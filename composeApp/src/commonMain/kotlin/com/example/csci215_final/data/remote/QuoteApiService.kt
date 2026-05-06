@@ -11,23 +11,19 @@ import kotlinx.serialization.json.Json
 // ZenQuotes.io — free, no API key required
 // GET https://zenquotes.io/api/today  →  [{"q":"...","a":"...","h":"..."}]
 class QuoteApiService {
-
     private val client = HttpClient {
         install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-            })
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                },
+            )
         }
     }
 
     suspend fun fetchTodayQuote(): QuoteDto {
         val quotes: List<QuoteDto> = client.get("https://zenquotes.io/api/today").body()
-        return quotes.first()
-    }
-
-    suspend fun fetchRandomQuote(): QuoteDto {
-        val quotes: List<QuoteDto> = client.get("https://zenquotes.io/api/random").body()
         return quotes.first()
     }
 }

@@ -2,17 +2,11 @@ package com.example.csci215_final.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.csci215_final.domain.model.Distraction
-import com.example.csci215_final.domain.model.Helper
 import com.example.csci215_final.domain.model.TaskWithRelations
-import com.example.csci215_final.repository.DistractionRepository
-import com.example.csci215_final.repository.HelperRepository
 import com.example.csci215_final.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -29,14 +23,13 @@ data class ExistingTaskUiState(
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
 class ExistingTaskViewModel(
     private val taskId: Long,
     private val taskRepository: TaskRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(ExistingTaskUiState())
     val uiState: StateFlow<ExistingTaskUiState> = _uiState.asStateFlow()
 
@@ -56,7 +49,7 @@ class ExistingTaskViewModel(
                 title = taskWithRelations.task.title,
                 description = taskWithRelations.task.description,
                 dueDateMillis = taskWithRelations.task.dueDate.toEpochMilliseconds(),
-                isLoading = false
+                isLoading = false,
             )
         }
     }
@@ -97,7 +90,7 @@ class ExistingTaskViewModel(
             val updated = original.task.copy(
                 title = state.title.trim(),
                 description = state.description.trim(),
-                dueDate = kotlinx.datetime.Instant.fromEpochMilliseconds(state.dueDateMillis)
+                dueDate = kotlinx.datetime.Instant.fromEpochMilliseconds(state.dueDateMillis),
             )
             taskRepository.updateTask(updated)
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)

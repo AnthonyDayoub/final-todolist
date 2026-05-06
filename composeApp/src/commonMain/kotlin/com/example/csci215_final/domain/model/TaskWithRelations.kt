@@ -4,5 +4,5 @@ data class TaskWithRelations(
     val task: Task,
     val helpers: List<Helper>,
     val distractions: List<Distraction>,
-    val reminders: List<Reminder>
+    val reminders: List<Reminder>,
 )

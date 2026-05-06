@@ -22,18 +22,23 @@ data class NewTaskUiState(
     val dueDateMillis: Long = Clock.System.now().toEpochMilliseconds(),
     val isSaving: Boolean = false,
     val isSaved: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
 class NewTaskViewModel(
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(NewTaskUiState())
     val uiState: StateFlow<NewTaskUiState> = _uiState.asStateFlow()
 
-    fun onTitleChange(title: String) { _uiState.value = _uiState.value.copy(title = title) }
-    fun onDescriptionChange(description: String) { _uiState.value = _uiState.value.copy(description = description) }
+    fun onTitleChange(title: String) {
+        _uiState.value = _uiState.value.copy(title = title)
+    }
+
+    fun onDescriptionChange(description: String) {
+        _uiState.value = _uiState.value.copy(description = description)
+    }
+
     fun onDueDateChange(millis: Long) {
         val tz = TimeZone.currentSystemDefault()
         val currentTime = Instant.fromEpochMilliseconds(_uiState.value.dueDateMillis).toLocalDateTime(tz).time
@@ -63,7 +68,7 @@ class NewTaskViewModel(
                 title = state.title.trim(),
                 description = state.description.trim(),
                 dueDate = kotlinx.datetime.Instant.fromEpochMilliseconds(state.dueDateMillis),
-                createdAt = now
+                createdAt = now,
             )
             taskRepository.insertTask(task)
             _uiState.value = _uiState.value.copy(isSaving = false, isSaved = true)
