@@ -1,6 +1,8 @@
 package com.example.csci215_final.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +38,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,215 +53,219 @@ import com.example.csci215_final.di.ServiceLocator
 import com.example.csci215_final.ui.components.PurpleButton
 import com.example.csci215_final.ui.components.toDisplayDate
 import com.example.csci215_final.ui.components.toShortTime
-import com.example.csci215_final.ui.theme.CustomRed
 import com.example.csci215_final.viewmodel.NewTaskViewModel
 import csci215final.composeapp.generated.resources.Bobby
 import csci215final.composeapp.generated.resources.Brownist
 import csci215final.composeapp.generated.resources.Papernotes
 import csci215final.composeapp.generated.resources.Res
+import csci215final.composeapp.generated.resources.looseLeafPaperBKGD
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.Font
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewTaskScreen(
-    onNavigateBack: () -> Unit,
-    viewModel: NewTaskViewModel = viewModel { ServiceLocator.newTaskViewModel() },
-) {
+fun NewTaskScreen(onNavigateBack: () -> Unit) {
+    val viewModel: NewTaskViewModel = viewModel { ServiceLocator.newTaskViewModel() }
     val uiState by viewModel.uiState.collectAsState()
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = uiState.dueDateMillis,
+        initialSelectedDateMillis = uiState.dueDateMillis
     )
 
     val initialDt = remember {
-        Instant
-            .fromEpochMilliseconds(uiState.dueDateMillis)
+        Instant.fromEpochMilliseconds(uiState.dueDateMillis)
             .toLocalDateTime(TimeZone.currentSystemDefault())
     }
     val timePickerState = rememberTimePickerState(
         initialHour = initialDt.hour,
         initialMinute = initialDt.minute,
-        is24Hour = false,
+        is24Hour = false
     )
 
     val bobbyFont = FontFamily(Font(Res.font.Bobby))
-    val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
 
     LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) currentOnNavigateBack()
+        if (uiState.isSaved) onNavigateBack()
     }
 
-    Scaffold(
-        containerColor = Color.Transparent,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "New Task",
-                        fontFamily = FontFamily(Font(Res.font.Brownist)),
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = CustomRed,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-            )
-        },
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Spacer(Modifier.height(4.dp))
-
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = viewModel::onTitleChange,
-                label = {
-                    Text(
-                        text = "Title of Task",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                            fontWeight = FontWeight(400),
-                            color = Color(0xFF000000),
-                            textAlign = TextAlign.Right,
-                        ),
-                    )
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                isError = uiState.error != null && uiState.title.isBlank(),
-            )
-
-            OutlinedTextField(
-                value = uiState.description,
-                onValueChange = viewModel::onDescriptionChange,
-                label = {
-                    Text(
-                        text = "Description of Task",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            fontFamily = FontFamily(Font(Res.font.Papernotes)),
-                            fontWeight = FontWeight(400),
-                            color = Color(0xFF000000),
-                            textAlign = TextAlign.Right,
-                        ),
-                    )
-                },
-                minLines = 3,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            // Due Date
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    "Due: ${
-                        Instant.fromEpochMilliseconds(uiState.dueDateMillis).toDisplayDate()
-                    }",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedButton(onClick = { showDatePicker = true }) {
-                    Text(
-                        text = "Change Date",
-                        fontFamily = bobbyFont,
-                    )
-                }
-            }
-
-            // Scheduled Time
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    "Time: ${
-                        Instant.fromEpochMilliseconds(uiState.dueDateMillis).toShortTime()
-                    }",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                OutlinedButton(onClick = { showTimePicker = true }) {
-                    Text(
-                        "Change Time",
-                        fontFamily = bobbyFont,
-                    )
-                }
-            }
-
-            if (uiState.error != null) {
-                Text(
-                    uiState.error!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            HorizontalDivider()
-
-            Spacer(Modifier.height(8.dp))
-
-            PurpleButton(
-                text = "Save Task",
-                onClick = viewModel::saveTask,
-                isLoading = uiState.isSaving,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(Modifier.height(24.dp))
-        }
-    }
-
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { viewModel.onDueDateChange(it) }
-                    showDatePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-            },
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    if (showTimePicker) {
-        AlertDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
-                    showTimePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
-            },
-            text = { TimePicker(state = timePickerState) },
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(Res.drawable.looseLeafPaperBKGD),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop
         )
+
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "New Task",
+                            fontFamily = FontFamily(Font(Res.font.Brownist))
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = CustomRed,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    )
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Spacer(Modifier.height(4.dp))
+
+                OutlinedTextField(
+                    value = uiState.title,
+                    onValueChange = viewModel::onTitleChange,
+                    label = {
+                        Text(
+                            text = "Title of Task",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF000000),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = uiState.error != null && uiState.title.isBlank()
+                )
+
+                OutlinedTextField(
+                    value = uiState.description,
+                    onValueChange = viewModel::onDescriptionChange,
+                    label = {
+                        Text(
+                            text = "Description of Task",
+                            style = TextStyle(
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily(Font(Res.font.Papernotes)),
+                                fontWeight = FontWeight(400),
+                                color = Color(0xFF000000),
+                                textAlign = TextAlign.Right,
+                            )
+                        )
+                    },
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Due Date
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Due: ${
+                            Instant.fromEpochMilliseconds(uiState.dueDateMillis).toDisplayDate()
+                        }",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    OutlinedButton(onClick = { showDatePicker = true }) {
+                        Text(
+                            text = "Change Date",
+                            fontFamily = bobbyFont
+                        )
+                    }
+                }
+
+                // Scheduled Time
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        "Time: ${
+                            Instant.fromEpochMilliseconds(uiState.dueDateMillis).toShortTime()
+                        }",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    OutlinedButton(onClick = { showTimePicker = true }) {
+                        Text("Change Time",
+                        fontFamily = bobbyFont
+                        )
+                    }
+                }
+
+                if (uiState.error != null) {
+                    Text(
+                        uiState.error!!, color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                HorizontalDivider()
+
+                Spacer(Modifier.height(8.dp))
+
+                PurpleButton(
+                    text = "Save Task",
+                    onClick = viewModel::saveTask,
+                    isLoading = uiState.isSaving,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(24.dp))
+            }
+        }
+
+        if (showDatePicker) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { viewModel.onDueDateChange(it) }
+                        showDatePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                }
+            ) {
+                DatePicker(state = datePickerState)
+            }
+        }
+
+        if (showTimePicker) {
+            AlertDialog(
+                onDismissRequest = { showTimePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.onScheduleTimeChange(timePickerState.hour, timePickerState.minute)
+                        showTimePicker = false
+                    }) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                },
+                text = { TimePicker(state = timePickerState) }
+            )
+        }
     }
 }
