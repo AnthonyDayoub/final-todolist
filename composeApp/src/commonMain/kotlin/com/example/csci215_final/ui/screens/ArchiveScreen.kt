@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -52,7 +53,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun ArchiveScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToEditTask: (Long) -> Unit
+    onNavigateToEditTask: (Long) -> Unit,
+    onNavigateToEditReminder: (Long) -> Unit
 ) {
     val viewModel: ArchiveViewModel = viewModel { ServiceLocator.archiveViewModel() }
     val completedTasks by viewModel.completedTasks.collectAsState()
@@ -69,7 +71,12 @@ fun ArchiveScreen(
         Image(
             painter = painterResource(Res.drawable.looseLeafPaperBKGD),
             contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = 1.3f,
+                    scaleY = 1.3f
+                ),
             contentScale = ContentScale.Crop
         )
 
